@@ -5,7 +5,8 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class ZScrore extends Model
+class Visit extends Model
 {
+    public $timestamps = false;        
     
 }

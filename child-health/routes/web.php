@@ -12,12 +12,16 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect("admin");
 });
 
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
     Route::get('grafica', 'GraficasController@index');
+    Route::resource('children','ChildrenController');
+    Route::get('{country_id}/searchStateCountry', 'ChildrenController@searchStateCountry');
+    Route::get('{state_id}/searchMunicipalityState', 'ChildrenController@searchMunicipalityState');
+    Route::get('{municipality_id}/searchParishMunicipality', 'ChildrenController@searchParishMunicipality');
 
 });

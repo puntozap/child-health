@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;;
+namespace App\Http\Controllers;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
@@ -13,16 +13,12 @@ use TCG\Voyager\Events\BreadDataUpdated;
 use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
-use App\ZScoreLengthGirl;
-use App\ZScoreLengthBoy;
-use App\ZScoreWeightForHeightGirl;
-use App\ZScoreWeightForLenghtGirl;
-use App\ZScoreWeightForLenghtBoy;
-use App\ZScoreWeightForHeightBoy;
-use App\ZScoreWeightBoy;
-use App\ZScoreWeightGirl;
-
-class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
+use App\User;
+use App\Country;
+use App\State;
+use App\Municipality;
+use App\Parish;
+class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 {
     use BreadRelationshipParser;
 
@@ -40,119 +36,118 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function index(Request $request)
     {
-        // dd("hola");
         // GET THE SLUG, ex. 'posts', 'pages', etc.
-        $ZScoreGirl = ZScoreLengthGirl::get();
-        $ZScoreLengthBoy = ZScoreLengthBoy::get();
-        $ZScoreWeightForHeightGirl = ZScoreWeightForHeightGirl::get();
-        $ZScoreWeightForLenghtGirl = ZScoreWeightForLenghtGirl::get();
-        $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtBoy::get();
-        $ZScoreWeightForHeightBoy = ZScoreWeightForHeightBoy::get();
-        $ZScoreWeightBoy = ZScoreWeightBoy::get();
-        $ZScoreWeightGirl = ZScoreWeightGirl::get();
-        // dd($ZScoreLengthBoy);
-        $slug='voyager.grafica';
-        $view = $slug.'.browse';
-        // dd('sub-'.$slug);
-        $graficZScoreGirl=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreGirl as $z){
-            array_push($graficZScoreGirl[0],$z->SD2neg);
-            array_push($graficZScoreGirl[1],$z->SD1neg);
-            array_push($graficZScoreGirl[2],$z->SD0);
-            array_push($graficZScoreGirl[3],$z->SD1);
-            array_push($graficZScoreGirl[4],$z->SD2);
-        }
-        $graficZScoreLengthBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreLengthBoy as $z){
-            array_push($graficZScoreLengthBoy[0],$z->SD2neg);
-            array_push($graficZScoreLengthBoy[1],$z->SD1neg);
-            array_push($graficZScoreLengthBoy[2],$z->SD0);
-            array_push($graficZScoreLengthBoy[3],$z->SD1);
-            array_push($graficZScoreLengthBoy[4],$z->SD2);
-        }
-        $graficZScoreWeightForHeightGirl=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightForHeightGirl as $z){
-            array_push($graficZScoreWeightForHeightGirl[0],$z->SD2neg);
-            array_push($graficZScoreWeightForHeightGirl[1],$z->SD1neg);
-            array_push($graficZScoreWeightForHeightGirl[2],$z->SD0);
-            array_push($graficZScoreWeightForHeightGirl[3],$z->SD1);
-            array_push($graficZScoreWeightForHeightGirl[4],$z->SD2);
-        }
-        $graficZScoreWeightForLenghtGirl=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightForLenghtGirl as $z){
-            array_push($graficZScoreWeightForLenghtGirl[0],$z->SD2neg);
-            array_push($graficZScoreWeightForLenghtGirl[1],$z->SD1neg);
-            array_push($graficZScoreWeightForLenghtGirl[2],$z->SD0);
-            array_push($graficZScoreWeightForLenghtGirl[3],$z->SD1);
-            array_push($graficZScoreWeightForLenghtGirl[4],$z->SD2);
-        }
-        $graficZScoreWeightForLenghtBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightForLenghtBoy as $z){
-            array_push($graficZScoreWeightForLenghtBoy[0],$z->SD2neg);
-            array_push($graficZScoreWeightForLenghtBoy[1],$z->SD1neg);
-            array_push($graficZScoreWeightForLenghtBoy[2],$z->SD0);
-            array_push($graficZScoreWeightForLenghtBoy[3],$z->SD1);
-            array_push($graficZScoreWeightForLenghtBoy[4],$z->SD2);
-        }
-        $graficZScoreWeightForHeightBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightForHeightBoy as $z){
-            array_push($graficZScoreWeightForHeightBoy[0],$z->SD2neg);
-            array_push($graficZScoreWeightForHeightBoy[1],$z->SD1neg);
-            array_push($graficZScoreWeightForHeightBoy[2],$z->SD0);
-            array_push($graficZScoreWeightForHeightBoy[3],$z->SD1);
-            array_push($graficZScoreWeightForHeightBoy[4],$z->SD2);
-        }
-        $graficZScoreWeightBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightBoy as $z){
-            array_push($graficZScoreWeightBoy[0],$z->SD2neg);
-            array_push($graficZScoreWeightBoy[1],$z->SD1neg);
-            array_push($graficZScoreWeightBoy[2],$z->SD0);
-            array_push($graficZScoreWeightBoy[3],$z->SD1);
-            array_push($graficZScoreWeightBoy[4],$z->SD2);
-        }
-        $graficZScoreWeightGirl=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
-        // // dd($grafic);
-        foreach($ZScoreWeightGirl as $z){
-            array_push($graficZScoreWeightGirl[0],$z->SD2neg);
-            array_push($graficZScoreWeightGirl[1],$z->SD1neg);
-            array_push($graficZScoreWeightGirl[2],$z->SD0);
-            array_push($graficZScoreWeightGirl[3],$z->SD1);
-            array_push($graficZScoreWeightGirl[4],$z->SD2);
-        }
-        // dd($grafic);
-        // dd($view);
-        $ZScoreLengthBoy = ZScoreLengthBoy::get();
-        $ZScoreWeightForHeightGirl = ZScoreWeightForHeightGirl::get();
-        $ZScoreWeightForLenghtGirl = ZScoreWeightForLenghtGirl::get();
-        $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtBoy::get();
-        $ZScoreWeightForHeightBoy = ZScoreWeightForHeightBoy::get();
-        $ZScoreWeightBoy = ZScoreWeightBoy::get();
-        $ZScoreWeightGirl = ZScoreWeightGirl::get();
-        return Voyager::view($view, compact(
-            'ZScoreGirl',
-            'graficZScoreGirl',
-            'ZScoreWeightForHeightGirl',
-            'ZScoreWeightForLenghtGirl',
-            'ZScoreWeightForLenghtBoy',
-            'ZScoreWeightForHeightBoy',
-            'ZScoreWeightBoy',
-            'ZScoreWeightGirl',
-            'ZScoreLengthBoy',
-            'graficZScoreWeightForHeightGirl',
-            'graficZScoreWeightForLenghtGirl',
-            'graficZScoreWeightForLenghtBoy',
-            'graficZScoreWeightForHeightBoy',
-            'graficZScoreWeightBoy',
-            'graficZScoreWeightGirl',
-            'graficZScoreLengthBoy',
 
+        // dd("index");
+        // $slug = $this->getSlug($request);
+        $slug='users';
+        // GET THE DataType based on the slug
+        $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
+        // dd($dataType);
+        // Check permission
+        $this->authorize('browse', app($dataType->model_name));
+
+        $getter = $dataType->server_side ? 'paginate' : 'get';
+
+        $search = (object) ['value' => $request->get('s'), 'key' => $request->get('key'), 'filter' => $request->get('filter')];
+        $searchable = $dataType->server_side ? array_keys(SchemaManager::describeTable(app($dataType->model_name)->getTable())->toArray()) : '';
+        $orderBy = $request->get('order_by', $dataType->order_column);
+        $sortOrder = $request->get('sort_order', null);
+        $usesSoftDeletes = false;
+        $showSoftDeleted = false;
+        $orderColumn = [];
+        if ($orderBy) {
+            $index = $dataType->browseRows->where('field', $orderBy)->keys()->first() + 1;
+            $orderColumn = [[$index, 'desc']];
+            if (!$sortOrder && isset($dataType->order_direction)) {
+                $sortOrder = $dataType->order_direction;
+                $orderColumn = [[$index, $dataType->order_direction]];
+            } else {
+                $orderColumn = [[$index, 'desc']];
+            }
+        }
+        // dd($orderBy);
+        // Next Get or Paginate the actual content from the MODEL that corresponds to the slug DataType
+        if (strlen($dataType->model_name) != 0) {
+            $model = app($dataType->model_name);
+
+            if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope'.ucfirst($dataType->scope))) {
+                $query = $model->{$dataType->scope}();
+            } else {
+                $query = $model::select('*');
+            }
+
+            // Use withTrashed() if model uses SoftDeletes and if toggle is selected
+            if ($model && in_array(SoftDeletes::class, class_uses($model)) && app('VoyagerAuth')->user()->can('delete', app($dataType->model_name))) {
+                $usesSoftDeletes = true;
+
+                if ($request->get('showSoftDeleted')) {
+                    $showSoftDeleted = true;
+                    $query = $query->withTrashed();
+                }
+            }
+
+            // If a column has a relationship associated with it, we do not want to show that field
+            $this->removeRelationshipField($dataType, 'browse');
+
+            if ($search->value != '' && $search->key && $search->filter) {
+                $search_filter = ($search->filter == 'equals') ? '=' : 'LIKE';
+                $search_value = ($search->filter == 'equals') ? $search->value : '%'.$search->value.'%';
+                $query->where($search->key, $search_filter, $search_value);
+            }
+
+            if ($orderBy && in_array($orderBy, $dataType->fields())) {
+                $querySortOrder = (!empty($sortOrder)) ? $sortOrder : 'desc';
+                $dataTypeContent = call_user_func([
+                    $query->orderBy($orderBy, $querySortOrder),
+                    $getter,
+                ]);
+            } elseif ($model->timestamps) {
+                $dataTypeContent = call_user_func([$query->latest($model::CREATED_AT), $getter]);
+            } else {
+                $dataTypeContent = call_user_func([$query->orderBy($model->getKeyName(), 'DESC'), $getter]);
+            }
+
+            // Replace relationships' keys for labels and create READ links if a slug is provided.
+            $dataTypeContent = $this->resolveRelations($dataTypeContent, $dataType);
+        } else {
+            // If Model doesn't exist, get data from table name
+            $dataTypeContent = call_user_func([DB::table($dataType->name), $getter]);
+            $model = false;
+        }
+
+        // Check if BREAD is Translatable
+        if (($isModelTranslatable = is_bread_translatable($model))) {
+            $dataTypeContent->load('translations');
+        }
+        $dataTypeContent=User::where("role_id",6)->get();
+        // dd($dataTypeContent);
+        // Check if server side pagination is enabled
+        $isServerSide = isset($dataType->server_side) && $dataType->server_side;
+
+        // Check if a default search key is set
+        $defaultSearchKey = $dataType->default_search_key ?? null;
+
+        $view = 'voyager.children.browse';
+
+        if (view()->exists("voyager::children.browse")) {
+            $view = "voyager::children.browse";
+        }
+        // dd($view);
+
+        return Voyager::view($view, compact(
+            'dataType',
+            'dataTypeContent',
+            'isModelTranslatable',
+            'search',
+            'orderBy',
+            'orderColumn',
+            'sortOrder',
+            'searchable',
+            'isServerSide',
+            'defaultSearchKey',
+            'usesSoftDeletes',
+            'showSoftDeleted'
         ));
     }
 
@@ -170,6 +165,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function show(Request $request, $id)
     {
+        dd("show");
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -230,6 +226,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function edit(Request $request, $id)
     {
+        dd("edit");
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -324,8 +321,9 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function create(Request $request)
     {
-        $slug = $this->getSlug($request);
-
+        // dd("create");
+        // $slug = $this->getSlug($request);
+        $slug='users';
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
         // Check permission
@@ -336,22 +334,27 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
                             : false;
 
         foreach ($dataType->addRows as $key => $row) {
-            $dataType->addRows[$key]['col_width'] = $row->details->width ?? 100;
+                $dataType->addRows[$key]['col_width'] = $row->details->width ?? 100;
         }
-
+        // dd($dataType->addRows);
         // If a column has a relationship associated with it, we do not want to show that field
         $this->removeRelationshipField($dataType, 'add');
 
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = 'voyager::bread.edit-add';
+        $view = 'voyager.children.edit-add';
 
-        if (view()->exists("voyager::$slug.edit-add")) {
-            $view = "voyager::$slug.edit-add";
+        if (view()->exists("voyager::children.edit-add")) {
+            $view = "voyager::children.edit-add";
         }
-
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable'));
+        // dd($view);
+        $Country=Country::get();
+        $State=State::get();
+        $Municipality=Municipality::get();
+        $Parish=Parish::get();
+        // dd($Country);
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','Country','State','Municipality','Parish'));
     }
 
     /**
@@ -363,23 +366,33 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
      */
     public function store(Request $request)
     {
-        $slug = $this->getSlug($request);
+        // dd($request);
+        // $slug = $this->getSlug($request);
+        $slug="users";
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
-
+        // dd($dataType);
         // Check permission
         $this->authorize('add', app($dataType->model_name));
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
-
+        // dd($data);
+        $User=User::find($data->id);
+        $User->country_id=$request['country_id'];
+        $User->state_id=$request['state_id'];
+        $User->municipality_id=$request['municipality_id'];
+        $User->parish_id=$request['parish_id'];
+        $User->address=$request['address'];
+        $User->role_id=6;
+        $User->save();
         event(new BreadDataAdded($dataType, $data));
 
         return redirect()
-        ->route("voyager.{$dataType->slug}.index")
+        ->route("children.index")
         ->with([
-                'message'    => __('voyager::generic.successfully_added_new')." {$dataType->display_name_singular}",
+                'message'    => __('voyager::generic.successfully_added_new')." probando",
                 'alert-type' => 'success',
             ]);
     }
@@ -398,6 +411,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function destroy(Request $request, $id)
     {
+        dd("destroy");
         $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -692,5 +706,21 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
 
         // No result found, return empty array
         return response()->json([], 404);
+    }
+    
+    public function searchStateCountry($id){
+        $State=State::where("country_id",$id)->get();
+        
+        return response()->json($State);
+    }
+    public function searchMunicipalityState($id){
+        $Municipality=Municipality::where("state_id",$id)->get();
+        
+        return response()->json($Municipality);
+    }
+    public function searchParishMunicipality($id){
+        $Parish=Parish::where("municipality_id",$id)->get();
+        
+        return response()->json($Parish);
     }
 }
