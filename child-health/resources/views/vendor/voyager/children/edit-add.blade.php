@@ -28,7 +28,7 @@
                     <!-- form start -->
                     <form role="form"
                             class="form-edit-add"
-                            action="{{ $edit ? route('voyager.children.update', $dataTypeContent->getKey()) : '/admin/children' }}"
+                            action="{{ $edit ? '/admin/children/'.$dataTypeContent->id : '/admin/children' }}"
                             method="POST" enctype="multipart/form-data">
                         <!-- PUT Method if we are editing -->
                         @if($edit)
@@ -54,7 +54,10 @@
                             @php
                                 $dataTypeRows = $dataType->{($edit ? 'editRows' : 'addRows' )};
                             @endphp
-
+                            <!-- <div class="col-md-12">
+                                <label for="">Cedula de Identidad</label>
+                                <input type="number" class="form-control" id="dni">
+                            </div> -->
                             @foreach($dataTypeRows as $row)
                             
                                 <!-- GET THE DISPLAY OPTIONS -->
@@ -94,10 +97,11 @@
                             @endforeach
                             <div class="col-md-12">
                                 <label for="">Seleccione Pais</label>
+                                
                                 <select name="country_id" id="country_id" class="form-control select2" onchange="searchStateCountry()">
                                     <option value="">Seleccione Pais</option>
                                     @foreach($Country as $country)
-                                        <option value="{{$country->id}}">{{$country->name}}</option>
+                                        <option value="{{$country->id}}" {{isset($dataTypeContent->country_id)&&$dataTypeContent->country_id==$country->id?'selected':''}}>{{$country->name}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -112,33 +116,9 @@
                             </div>
                             <div class="col-md-12">
                                 <label for="">Direccion de habitacion</label>
-                                <textarea class="form-control" name="address" id="addresss" cols="30" rows="10"></textarea>
+                                <textarea class="form-control" name="address" id="addresss" cols="30" rows="10">{{isset($dataTypeContent->address)?$dataTypeContent->address:""}}</textarea>
                             </div>
-                            <div class="col-md-12">
-                                <button class="btn btn-dark btn-block" type="button">Agregar datos de la Madre</button>
-                                <button class="btn btn-success btn-block" type="button">Agregar datos del Padre</button>
-                            </div>
-                            <div class="col-md-12">
-                                <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Padres</th>
-                                                <th>Fecha de Nacimiento</th>
-                                                <td>Peso</td>
-                                                <th>Talla</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                            </tr>
-                                        </tbody>
-                                </table>
-
-                            </div>
+                            
 
                         </div><!-- panel-body -->
 
@@ -261,31 +241,44 @@
             var url="/admin/"+country_id+"/searchStateCountry" ;
             var state="state_id";
             var label="Seleccione Estado";
+            var state_id='{{isset($dataTypeContent->state_id)?$dataTypeContent->state_id:""}}';
             var functions="searchMunicipalityState()";
-            ajax(url,state,label,functions);
-            // console.log(data);
+            ajax(url,state,label,functions,state_id);
+            // console.log(country_id);
         }
         function searchMunicipalityState(){
             var state_id=$("#state_id").val();
+            // alert(state_id==null);
+            if(state_id==null){
+                state_id="{{isset($dataTypeContent->state_id)?$dataTypeContent->state_id:''}}";
+            }
             var url="/admin/"+state_id+"/searchMunicipalityState" ;
             var state="municipality_id";
             var label="Seleccione Municipio";
+            
+            var municipality_id="{{isset($dataTypeContent->municipality_id)?$dataTypeContent->municipality_id:""}}";
+            
             var functions="searchParishMunicipality()";
-            ajax(url,state,label,functions);
+            ajax(url,state,label,functions,municipality_id);
             // console.log(data);
         }
         function searchParishMunicipality(){
             var municipality_id=$("#municipality_id").val();
+            if(municipality_id==null){
+                municipality_id='{{isset($dataTypeContent->municipality_id)?$dataTypeContent->municipality_id:""}}';
+            }
             var url="/admin/"+municipality_id+"/searchParishMunicipality" ;
             var state="parish_id";
             var label="Seleccione Parroquia";
+            var parish_id='{{isset($dataTypeContent->parish_id)?$dataTypeContent->parish_id:""}}';
             var functions="";
-            ajax(url,state,label,functions);
+            ajax(url,state,label,functions,parish_id);
             // console.log(data);
         }
-        function ajax(url,div,label,functions){
+        function ajax(url,div,label,functions,dataSelected){
             console.log(functions);
             var html="";
+            var selected="";
             $.ajax({
                 dataType: "json",
                 method:'get',
@@ -297,12 +290,24 @@
                     html+='<select name="'+div+'" id="'+div+'" class="form-control select2" onchange="'+functions+'">';
                         html+='<option value="">'+label+'</option>';
                         for(var i=0;i<data.length;i++){
-                            html+='<option value="'+data[i].id+'">'+data[i].name+'</option>';
+                            if(dataSelected==data[i].id){
+                                selected="selected";
+                            }else{
+                                selected="";
+                            }
+                            html+='<option value="'+data[i].id+'" '+selected+'>'+data[i].name+'</option>';
                         }
                     html+="</select>";
                     $("."+div).append(html);                    
                 }
             });
         }
+    </script>
+    <script>
+        @if(isset($dataTypeContent))
+            searchStateCountry();
+            searchMunicipalityState();
+            searchParishMunicipality();
+        @endif
     </script>
 @stop

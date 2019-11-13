@@ -14,11 +14,12 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\User;
+use App\Role;
 use App\Country;
 use App\State;
 use App\Municipality;
 use App\Parish;
-class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
+class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
 {
     use BreadRelationshipParser;
 
@@ -34,7 +35,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function index(Request $request)
+    public function index(Request $request,$id)
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
 
@@ -115,12 +116,12 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             $dataTypeContent = call_user_func([DB::table($dataType->name), $getter]);
             $model = false;
         }
-
+        // $dataTypeContent=User::where("user_son_id",$id)->get();
         // Check if BREAD is Translatable
         if (($isModelTranslatable = is_bread_translatable($model))) {
             $dataTypeContent->load('translations');
         }
-        $dataTypeContent=User::where("role_id",6)->get();
+        $dataTypeContent=User::where("user_son_id",$id)->get();
         // dd($dataTypeContent);
         // Check if server side pagination is enabled
         $isServerSide = isset($dataType->server_side) && $dataType->server_side;
@@ -128,11 +129,11 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         // Check if a default search key is set
         $defaultSearchKey = $dataType->default_search_key ?? null;
 
-        $view = 'voyager.children.browse';
 
         if (view()->exists("voyager::children.browse")) {
             $view = "voyager::children.browse";
         }
+        $view = 'vendor.voyager.parents.browse';
         // dd($view);
 
         return Voyager::view($view, compact(
@@ -147,7 +148,8 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted'
+            'showSoftDeleted',
+            'id'
         ));
     }
 
@@ -163,7 +165,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function show(Request $request, $id)
+    public function show(Request $request,$child_id, $id)
     {
         // dd("show");
         // $slug = $this->getSlug($request);
@@ -194,7 +196,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
         // Replace relationships' keys for labels and create READ links if a slug is provided.
         $dataTypeContent = $this->resolveRelations($dataTypeContent, $dataType, true);
-
+        // dd($dataTypeContent);
         // If a column has a relationship associated with it, we do not want to show that field
         $this->removeRelationshipField($dataType, 'read');
 
@@ -205,12 +207,12 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
         $view = 'voyager::bread.read';
-        $slug="children";
+        $slug="parents";
         if (view()->exists("voyager::$slug.read")) {
             $view = "voyager::$slug.read";
         }
 
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable', 'isSoftDeleted','id','child_id'));
     }
 
     //***************************************
@@ -225,7 +227,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function edit(Request $request, $id)
+    public function edit(Request $request,$child_id, $id)
     {
         // dd("edit");
         // $slug = $this->getSlug($request);
@@ -260,24 +262,26 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
-
-        $view = 'voyager.children.edit-add';
-        $slug="children";
+        $slug="parents";
+        $dataTypeContent=User::find($child_id);
         if (view()->exists("voyager::$slug.edit-add")) {
             $view = "voyager::$slug.edit-add";
         }
+        $view = 'vendor.voyager.parents.edit-add';
+        $Parent=Role::where("id",3)->orWhere("id",4)->get();
         // dd($view);
-        $Country=Country::get();
-        $State=State::get();
-        $Municipality=Municipality::get();
-        $Parish=Parish::get();
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','Country'));
+        // $Country=Country::get();
+        // $State=State::get();
+        // $Municipality=Municipality::get();
+        // $Parish=Parish::get();
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','id','child_id',"Parent"));
     }
 
     // POST BR(E)AD
     public function update(Request $request, $id)
     {
         // $slug = $this->getSlug($request);
+        // dd("hola");
         $slug="users";
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -304,15 +308,12 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
         event(new BreadDataUpdated($dataType, $data));
         $User=User::find($id);
-        $User->country_id=$request['country_id'];
-        $User->state_id=$request['state_id'];
-        $User->municipality_id=$request['municipality_id'];
-        $User->parish_id=$request['parish_id'];
-        $User->address=$request['address'];
-        // dd($User);
-        $User->role_id=6;
+        $User->dni=$request['dni'];
+        $User->length=$request['length'];
+        $User->weight=$request['weight'];
+        $User->user_son_id=$request['user_son_id'];
         $User->save();
-        return redirect("/admin/children")
+        return redirect("/admin/children/parents/".$request['user_son_id'])
         ->with([
             'message'    => __('voyager::generic.successfully_updated')." {$dataType->display_name_singular}",
             'alert-type' => 'success',
@@ -332,9 +333,9 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function create(Request $request)
+    public function create(Request $request,$id)
     {
-        // dd("create");
+        // dd($id);
         // $slug = $this->getSlug($request);
         $slug='users';
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -352,22 +353,20 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         // dd($dataType->addRows);
         // If a column has a relationship associated with it, we do not want to show that field
         $this->removeRelationshipField($dataType, 'add');
-
+        $Parent=Role::where("id",3)->orWhere("id",4)->get();
+        // dd($Parent);
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = 'voyager.children.edit-add';
 
         if (view()->exists("voyager::children.edit-add")) {
             $view = "voyager::children.edit-add";
         }
+        $view = 'vendor.voyager.parents.edit-add';
         // dd($view);
-        $Country=Country::get();
-        $State=State::get();
-        $Municipality=Municipality::get();
-        $Parish=Parish::get();
+        
         // dd($Country);
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','Country','State','Municipality','Parish'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','id','Parent'));
     }
 
     /**
@@ -377,9 +376,9 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request,$id)
     {
-        // dd($request);
+        // dd($id);
         // $slug = $this->getSlug($request);
         $slug="users";
 
@@ -393,17 +392,14 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
         // dd($data);
         $User=User::find($data->id);
-        $User->country_id=$request['country_id'];
-        $User->state_id=$request['state_id'];
-        $User->municipality_id=$request['municipality_id'];
-        $User->parish_id=$request['parish_id'];
-        $User->address=$request['address'];
-        $User->role_id=6;
+        $User->dni=$request['dni'];
+        $User->length=$request['length'];
+        $User->weight=$request['weight'];
+        $User->user_son_id=$request['user_son_id'];
         $User->save();
         event(new BreadDataAdded($dataType, $data));
 
-        return redirect()
-        ->route("children.index")
+        return redirect("/admin/children/parents/".$request['user_son_id'])
         ->with([
                 'message'    => __('voyager::generic.successfully_added_new')." probando",
                 'alert-type' => 'success',
@@ -422,7 +418,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, $id,$child_id)
     {
         // dd("destroy");
         // $slug = $this->getSlug($request);
@@ -467,7 +463,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             event(new BreadDataDeleted($dataType, $data));
         }
 
-        return redirect("/admin/children")->with($data);
+        return redirect("/admin/children/parents/".$child_id)->with($data);
     }
 
     public function restore(Request $request, $id)

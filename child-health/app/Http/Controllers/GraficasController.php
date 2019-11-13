@@ -51,7 +51,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
         $ZScoreWeightBoy = ZScoreWeightBoy::get();
         $ZScoreWeightGirl = ZScoreWeightGirl::get();
         // dd($ZScoreLengthBoy);
-        $slug='voyager.grafica';
+        $slug='.vendor.voyager.grafica';
         $view = $slug.'.browse';
         // dd('sub-'.$slug);
         $graficZScoreGirl=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];

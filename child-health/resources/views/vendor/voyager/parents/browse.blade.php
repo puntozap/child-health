@@ -1,14 +1,14 @@
 @extends('voyager::master')
-@section('page_title', __('voyager::generic.viewing').' '.$dataType->display_name_plural)
+@section('page_title', 'Representantes')
 
 @section('page_header')
 
     <div class="container-fluid">
         <h1 class="page-title">
-            <i class="{{ $dataType->icon }}"></i> {{ 'Niños/Niñas' }}
+            <i class="{{ $dataType->icon }}"></i> {{ 'Representantes' }}
         </h1>
         @can('add', app($dataType->model_name))
-            <a href="/admin/children/create" class="btn btn-success btn-add-new">
+            <a href="/admin/children/parents/{{$id}}/create" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
@@ -80,6 +80,7 @@
                                                 <input type="checkbox" class="select_all">
                                             </th>
                                         @endcan
+                                        
                                         @foreach($dataType->browseRows as $row)
                                         <th>
                                             @if ($isServerSide)
@@ -102,6 +103,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                
                                     @foreach($dataTypeContent as $data)
                                     <tr>
                                         @can('delete',app($dataType->model_name))
@@ -244,7 +246,18 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                            
+                                            <a href="/admin/children/parents/{{$data->id}}" title="Ver Representantes" class="btn btn-sm btn-success pull-right parents">
+                                                        <i class="voyager-person"></i> <span class="hidden-xs hidden-sm">Datos Padres</span>
+                                                    </a>
+                                            <a href="javascript:;" title="Borrar" class="btn btn-sm btn-danger pull-right delete" data-id="{{$data->id}}" id="delete-{{$data->id}}">
+                                                        <i class="voyager-trash"></i> <span class="hidden-xs hidden-sm">Borrar</span>
+                                                    </a>
+                                            <a href="/admin/children/parents/{{$data->id}}/{{$id}}/edit" title="Editar" class="btn btn-sm btn-primary pull-right edit">
+                                                        <i class="voyager-edit"></i> <span class="hidden-xs hidden-sm">Editar</span>
+                                                    </a>
+                                            <a href="/admin/children/parents/{{$id}}/{{$data->id}}" title="Ver" class="btn btn-sm btn-warning pull-right view">
+                                                        <i class="voyager-eye"></i> <span class="hidden-xs hidden-sm">Ver</span>
+                                                    </a>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -289,7 +302,6 @@
                     <form action="#" id="delete_form" method="POST">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
-                        hola
                         <input type="submit" class="btn btn-danger pull-right delete-confirm" value="{{ __('voyager::generic.delete_confirm') }}">
                     </form>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{{ __('voyager::generic.cancel') }}</button>
@@ -342,7 +354,7 @@
 
         var deleteFormAction;
         $('td').on('click', '.delete', function (e) {
-            $('#delete_form')[0].action = '{{ route('voyager.'.$dataType->slug.'.destroy', ['id' => '__id']) }}'.replace('__id', $(this).data('id'));
+            $('#delete_form')[0].action = '/admin/children/parents/'+$(this).data('id')+"/{{$id}}/destroy";            
             $('#delete_modal').modal('show');
         });
 
