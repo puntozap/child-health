@@ -29,7 +29,14 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('children/parents/{parent_id}/{child_id}',"ParentsController@show");
     Route::get('children/parents/{parent_id}/{child_id}/edit',"ParentsController@edit");
     Route::put('children/parents/{parent_id}',"ParentsController@update");
-    Route::put('children/parents/{parent_id}',"ParentsController@update");
     Route::delete('children/parents/{parent_id}/{id}/destroy',"ParentsController@destroy");
+    Route::get('children/visits/{children_id}',"VisitsController@index");
+    Route::get('children/visits/{children_id}/create',"VisitsController@create");
+    Route::get('children/visits/{children_id}/graphicsVisit',"VisitsController@graphicsVisit");
+    Route::post('children/visits/{children_id}/store',"VisitsController@store");
+    Route::get('children/visits/{visit_id}/{children_id}/edit',"VisitsController@edit");
+    Route::delete('children/visits/{id}/{children_id}/destroy',"VisitsController@destroy");
+    Route::post('children/visits/{visit_id}/update',"VisitsController@update");
+    // Route::delete('children/visits/{parent_id}/{id}/destroy',"VisitsController@destroy");
     // Route::resource("parents",'ParentsController');
 });

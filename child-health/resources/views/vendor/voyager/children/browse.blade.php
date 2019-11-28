@@ -1,6 +1,13 @@
 @extends('voyager::master')
-@section('page_title', __('voyager::generic.viewing').' '.$dataType->display_name_plural)
-
+@section('page_title', "Registrar paciente")
+@section("css")
+<style>
+    #dataTable #bread-actions a, .actions a.btn{
+        width: 100%;
+        display: inline-block;
+    }
+</style>
+@endsection
 @section('page_header')
 
     <div class="container-fluid">
@@ -245,18 +252,18 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                            <a href="/admin/children/parents/{{$data->id}}" title="Ver Representantes" class="btn btn-sm btn-success pull-right parents">
-                                                        <i class="voyager-person"></i> <span class="hidden-xs hidden-sm">Datos Padres</span>
+                                                <div class="dropdown ">
+                                                    <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                                        Accion del paciente
                                                     </a>
-                                            <a href="javascript:;" title="Borrar" class="btn btn-sm btn-danger pull-right delete" data-id="{{$data->id}}" id="delete-{{$data->id}}">
-                                                        <i class="voyager-trash"></i> <span class="hidden-xs hidden-sm">Borrar</span>
-                                                    </a>
-                                            <a href="/admin/children/{{$data->id}}/edit" title="Editar" class="btn btn-sm btn-primary pull-right edit">
-                                                        <i class="voyager-edit"></i> <span class="hidden-xs hidden-sm">Editar</span>
-                                                    </a>
-                                            <a href="/admin/children/{{$data->id}}" title="Ver" class="btn btn-sm btn-warning pull-right view">
-                                                        <i class="voyager-eye"></i> <span class="hidden-xs hidden-sm">Ver</span>
-                                                    </a>
+
+                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                                        <a class="dropdown-item" href="/admin/children/{{$data->id}}/edit">Editar Paciente</a>
+                                                        <a class="dropdown-item" href="/admin/children/parents/{{$data->id}}">Agregar Representantes</a>
+                                                        <a class="dropdown-item" href="/admin/children/visits/{{$data->id}}">Lista de Visitas al paciente</a>
+                                                    </div>
+                                                </div>
+                                            
                                         </td>
                                     </tr>
                                     @endforeach

@@ -5,10 +5,10 @@
 @section('page_header')
     <div class="container-fluid">
         <h1 class="page-title">
-            <i class="{{ $dataType->icon }}"></i> {{ $dataType->display_name_plural }}
+            <i class="{{ $dataType->icon }}"></i> {{ $dataType->display_name_plural }} 
         </h1>
         @can('add', app($dataType->model_name))
-            <a href="{{ route('voyager.'.$dataType->slug.'.create') }}" class="btn btn-success btn-add-new">
+            <a href="/admin/children/visits/{{$id}}/create" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
@@ -40,8 +40,39 @@
     <div class="page-content browse container-fluid">
         @include('voyager::alerts')
         <div class="row">
+            
             <div class="col-md-12">
                 <div class="panel panel-bordered">
+                <div class="row">
+                <div class="col-md-12">
+                    <table class="table">
+                        <tr class="btn-dark ">
+                            <td class="text-center">Nombre del paciente</td>
+                            <td class="text-center">Fecha de nacimiento</td>
+                            <td class="text-center">Sexo</td>
+                            <td class="text-center">Edad</td>
+                        </tr>
+                        <tr class="btn-info">
+                            <td class="text-center">{{$User->name.' '.$User->last_name}}</td>
+                            <td class="text-center">
+                            @php 
+                                $birthDate=new DateTime($User->date_birth);
+                                $formatBirthDay=$birthDate->format('d/m/Y');
+                            @endphp
+                            {{$formatBirthDay}}</td>
+                            <td class="text-center">{{$User->sex==1?'Masculino':"femenino"}}</td>
+                            <td class="text-center">
+                            @php 
+                                $dEnd = new DateTime(date("Y-m-d"));
+                                $dStart  = new DateTime($User->date_birth);
+                                $dDiff = $dStart->diff($dEnd);
+                                $days=$dDiff->format('%r%a');
+                            @endphp
+                            {{$days==1?$days.' Dia':$days.' Dias'}}</td>
+                        </tr>
+                    </table>
+                </div>
+                </div>
                     <div class="panel-body">
                         @if ($isServerSide)
                             <form method="get" class="form-search">
@@ -243,11 +274,14 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                            @foreach(Voyager::actions() as $action)
-                                                @if (!method_exists($action, 'massAction'))
-                                                    @include('voyager::bread.partials.actions', ['action' => $action])
-                                                @endif
-                                            @endforeach
+                                            
+                                            
+                                                    <a href="/admin/children/visits/{{$id}}/graphicsVisit" title="Editar" class="btn btn-sm btn-primary pull-right edit">
+                                                        <i class="voyager-users"></i> <span class="hidden-xs hidden-sm">Ver patron de crecimiento</span>
+                                                    </a>
+                                                    <a href="/admin/children/visits/{{$data->id}}/{{$id}}/edit" title="Editar" class="btn btn-sm btn-success pull-right edit">
+                                                        <i class="voyager-edit"></i> <span class="hidden-xs hidden-sm">Editar</span>
+                                                    </a>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -292,6 +326,7 @@
                     <form action="#" id="delete_form" method="POST">
                         {{ method_field('DELETE') }}
                         {{ csrf_field() }}
+
                         <input type="submit" class="btn btn-danger pull-right delete-confirm" value="{{ __('voyager::generic.delete_confirm') }}">
                     </form>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{{ __('voyager::generic.cancel') }}</button>
@@ -344,7 +379,7 @@
 
         var deleteFormAction;
         $('td').on('click', '.delete', function (e) {
-            $('#delete_form')[0].action = '{{ route('voyager.'.$dataType->slug.'.destroy', ['id' => '__id']) }}'.replace('__id', $(this).data('id'));
+            $('#delete_form')[0].action = '/admin/children/visits'+$(this).data('id')+"/{{$id}}/destroy";            
             $('#delete_modal').modal('show');
         });
 
@@ -374,6 +409,8 @@
             var ids = [];
             $('input[name="row_id"]').each(function() {
                 if ($(this).is(':checked')) {
+                    // alert();
+                    $("#bulk_delete_form").append("<input type='hidden' value={{$id}} name='reload'>");
                     ids.push($(this).val());
                 }
             });

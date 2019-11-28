@@ -246,9 +246,7 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                            <a href="/admin/children/parents/{{$data->id}}" title="Ver Representantes" class="btn btn-sm btn-success pull-right parents">
-                                                        <i class="voyager-person"></i> <span class="hidden-xs hidden-sm">Datos Padres</span>
-                                                    </a>
+                                            
                                             <a href="javascript:;" title="Borrar" class="btn btn-sm btn-danger pull-right delete" data-id="{{$data->id}}" id="delete-{{$data->id}}">
                                                         <i class="voyager-trash"></i> <span class="hidden-xs hidden-sm">Borrar</span>
                                                     </a>

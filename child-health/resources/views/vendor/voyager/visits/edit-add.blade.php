@@ -28,12 +28,10 @@
                     <!-- form start -->
                     <form role="form"
                             class="form-edit-add"
-                            action="{{ $edit ? route('voyager.'.$dataType->slug.'.update', $dataTypeContent->getKey()) : route('voyager.'.$dataType->slug.'.store') }}"
+                            action="{{ $edit ? '/admin/children/visits/'.$id.'/update' : '/admin/children/visits/'.$id.'/store' }}"
                             method="POST" enctype="multipart/form-data">
                         <!-- PUT Method if we are editing -->
-                        @if($edit)
-                            {{ method_field("PUT") }}
-                        @endif
+                        
 
                         <!-- CSRF TOKEN -->
                         {{ csrf_field() }}
@@ -98,6 +96,7 @@
                             @stop
                             @yield('submit-buttons')
                         </div>
+                        <input type="hidden" name="child_id" value="{{$child_id}}">
                     </form>
 
                     <iframe id="form_target" name="form_target" style="display:none"></iframe>
@@ -207,6 +206,23 @@
         
         @if($edit==false)
             $("input[name='date_visit']").val('{{date("Y-m-d")}}');
+            @php 
+                $dEnd = new DateTime(date("Y-m-d"));
+                $dStart  = new DateTime($User->date_birth);
+                $dDiff = $dStart->diff($dEnd);
+                $days=$dDiff->format('%r%a');
+            @endphp
+            $("input[name='age']").val({{$days}});
         @endif
+        $("input[name='date_visit']").change(function(){
+            // alert($("input[name='date_visit']").val());
+            const date1 = new Date('{{$User->date_birth}}');
+            const date2 = new Date( $("input[name='date_visit']").val());
+            const diffTime = Math.abs(date1 - date2);
+            // alert(diffTime);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            // alert(diffDays);
+            $("input[name='age']").val(diffDays);
+        });
     </script>
 @stop
