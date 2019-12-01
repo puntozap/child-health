@@ -37,6 +37,11 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('children/visits/{visit_id}/{children_id}/edit',"VisitsController@edit");
     Route::delete('children/visits/{id}/{children_id}/destroy',"VisitsController@destroy");
     Route::post('children/visits/{visit_id}/update',"VisitsController@update");
+    Route::get('/formulas/inventories/{formula_id}',"InventoriesController@index");
+    Route::get('/formulas/inventories/{formula_id}/create',"InventoriesController@create");
+    Route::post('/formulas/inventories/{formula_id}/store',"InventoriesController@store");
+    Route::get('/formulas/inventories/{id}/{formula_id}/edit',"InventoriesController@edit");
+    Route::put('/formulas/inventories/{id}/{formula_id}/update',"InventoriesController@update");
     // Route::delete('children/visits/{parent_id}/{id}/destroy',"VisitsController@destroy");
     // Route::resource("parents",'ParentsController');
 });

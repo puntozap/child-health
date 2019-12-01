@@ -28,17 +28,17 @@
                 <div class="panel panel-bordered">
                     
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="">Puntuacion Z talla segun la edad ninos</label>
                             <div id="graficZScoreLengthBoy"></div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label for="">Puntuacion Z Peso segun la edad ninos</label>
                             <div id="graficZScoreWeightBoy"></div>
                         </div>
                         <div class="col-md-12">
-                            <label for="">6 Puntuacion Z Peso por height ninas</label>
-                            <div id="graficZScoreWeightForHeightGirl"></div>
+                            <label for="">7 Puntuacion Z Peso por talla ninos</label>
+                            <div id="graficZScoreWeightForLenghtBoy"></div>
                         </div>
                     </div>
                 </div>
@@ -80,10 +80,11 @@
         @for($i=0;$i<count($graficZScoreLengthBoy);$i++)
         graficZScoreLengthBoy[i]=new Array();
             j=0;
-            k=0;
-            @for($j=0;$j<182;$j++)
+            k=0;            @php $k=0; @endphp
+
+            @for($j=0;$j<(364);$j++)
                 if(j==0){
-                    @if($i+1==count($graficZScoreLengthBoy))
+                    @if($i+2==count($graficZScoreLengthBoy))
                         @if($k+1<count($graficZScoreLengthBoy[$i]))
                             
                             @foreach($graficZScoreLengthBoy[$i] as $g)
@@ -100,16 +101,32 @@
                             @endforeach
                         @endif
                     @else
-                        graficZScoreLengthBoy[i][k]="{{$graficZScoreLengthBoy[$i][$j]}}";
-                        k++;
-                        graficZScoreLengthBoy[i][k]={{$graficZScoreLengthBoy[$i][$j+1]}}
-                        k++;
+                    @if($i+1==count($graficZScoreLengthBoy))
+                        @if($k+1<count($graficZScoreLengthBoy[$i]))
+                            
+                                @foreach($graficZScoreLengthBoy[$i] as $g)
+                                    @if($k==0)
+                                        graficZScoreLengthBoy[i][k]="{{$graficZScoreLengthBoy[$i][$k]}}";
+                                        k++;
+                                        @php $k++; @endphp
+                                    @else  
+                                        graficZScoreLengthBoy[i][k]={{$graficZScoreLengthBoy[$i][$k]}}
+                                        k++;    
+                                        @php $k++; @endphp
+                                    @endif
+                                    
+                                @endforeach
+                            @endif
+                        @else
+                            graficZScoreLengthBoy[i][k]="{{$graficZScoreLengthBoy[$i][$j]}}";
+                            k++;
+                        @endif
                     @endif
                     
                 }
                 else{ 
                     @if($k==0)    
-                        if(j%7==0){
+                        if(j%1==0){
                                 graficZScoreLengthBoy[i][k]={{$graficZScoreLengthBoy[$i][$j]}}
                                 k++;
                         }
@@ -123,6 +140,14 @@
         var graficZScoreLengthBoy = c3.generate({
             bindto: '#graficZScoreLengthBoy',
             data: {
+                xs: {
+                    'SD2neg': 'x',
+                    'SD1neg': 'x',
+                    'SD0': 'x',
+                    'SD1': 'x',
+                    'SD2': 'x',
+                    'Visitas': 'age',
+                },
                 columns:graficZScoreLengthBoy ,
                 type: 'spline',
                 colors:{
@@ -132,6 +157,32 @@
                     SD1:'gray',
                     SD2:'#000000',
                     Visitas:'red',
+                }
+            },
+            axis: {
+                x: {
+                    label: {
+                        text: 'Edad en Dias',
+                        position: 'outer-center'
+                        // inner-right : default
+                        // inner-center
+                        // inner-left
+                        // outer-right
+                        // outer-center
+                        // outer-left
+                    }
+                },
+                y: {
+                    label: {
+                        text: 'Estatura (cm)',
+                        position: 'outer-middle'
+                        // inner-top : default
+                        // inner-middle
+                        // inner-bottom
+                        // outer-top
+                        // outer-middle
+                        // outer-bottom
+                    }
                 }
             }
         });
@@ -215,14 +266,15 @@
         @for($i=0;$i<count($graficZScoreWeightBoy);$i++)
         graficZScoreWeightBoy[i]=new Array();
             j=0;
-            k=0;
-            @for($j=0;$j<364;$j++)
+            k=0;            @php $k=0; @endphp
+
+            @for($j=0;$j<(364);$j++)
                 if(j==0){
-                    @if($i+1==count($graficZScoreWeightBoy))
+                    @if($i+2==count($graficZScoreWeightBoy))
                         @if($k+1<count($graficZScoreWeightBoy[$i]))
                             
                             @foreach($graficZScoreWeightBoy[$i] as $g)
-                            @if($k==0)
+                                @if($k==0)
                                     graficZScoreWeightBoy[i][k]="{{$graficZScoreWeightBoy[$i][$k]}}";
                                     k++;
                                     @php $k++; @endphp
@@ -231,22 +283,39 @@
                                     k++;    
                                     @php $k++; @endphp
                                 @endif
+                                
                             @endforeach
-                        
                         @endif
                     @else
-                        graficZScoreWeightBoy[i][k]="{{$graficZScoreWeightBoy[$i][$j]}}";
-                        k++;
-                        graficZScoreWeightBoy[i][k]={{$graficZScoreWeightBoy[$i][$j+1]}}
-                        k++;
+                    @if($i+1==count($graficZScoreWeightBoy))
+                        @if($k+1<count($graficZScoreWeightBoy[$i]))
+                            
+                                @foreach($graficZScoreWeightBoy[$i] as $g)
+                                    @if($k==0)
+                                        graficZScoreWeightBoy[i][k]="{{$graficZScoreWeightBoy[$i][$k]}}";
+                                        k++;
+                                        @php $k++; @endphp
+                                    @else  
+                                        graficZScoreWeightBoy[i][k]={{$graficZScoreWeightBoy[$i][$k]}}
+                                        k++;    
+                                        @php $k++; @endphp
+                                    @endif
+                                    
+                                @endforeach
+                            @endif
+                        @else
+                            graficZScoreWeightBoy[i][k]="{{$graficZScoreWeightBoy[$i][$j]}}";
+                            k++;
+                        @endif
                     @endif
+                    
                 }
                 else{ 
-                    @if($k==0)  
-                    if(j%7==0){
-                        graficZScoreWeightBoy[i][k]={{$graficZScoreWeightBoy[$i][$j]}}
-                        k++;
-                    }
+                    @if($k==0)    
+                        if(j%1==0){
+                                graficZScoreWeightBoy[i][k]={{$graficZScoreWeightBoy[$i][$j]}}
+                                k++;
+                        }
                     @endif
                 }
                 j++;
@@ -257,6 +326,14 @@
         var graficZScoreWeightBoy = c3.generate({
             bindto: '#graficZScoreWeightBoy',
             data: {
+                xs: {
+                    'SD2neg': 'x',
+                    'SD1neg': 'x',
+                    'SD0': 'x',
+                    'SD1': 'x',
+                    'SD2': 'x',
+                    'Visitas': 'age',
+                },
                 columns:graficZScoreWeightBoy ,
                 type: 'spline',
                 colors:{
@@ -266,6 +343,150 @@
                     SD1:'gray',
                     SD2:'#000000',
                     Visitas:'red',
+                }
+            },
+            axis: {
+                x: {
+                    label: {
+                        text: 'Edad en Dias',
+                        position: 'outer-center'
+                        // inner-right : default
+                        // inner-center
+                        // inner-left
+                        // outer-right
+                        // outer-center
+                        // outer-left
+                    }
+                },
+                y: {
+                    label: {
+                        text: 'Peso (Kg)',
+                        position: 'outer-middle'
+                        // inner-top : default
+                        // inner-middle
+                        // inner-bottom
+                        // outer-top
+                        // outer-middle
+                        // outer-bottom
+                    }
+                }
+            }
+        });
+
+    </script>
+
+    
+    <script>
+        var graficZScoreWeightForLenghtBoy=[];
+        var i=0,j=0,k=0;
+        @php $k=0; @endphp
+
+        @for($i=0;$i<count($graficZScoreWeightForLenghtBoy);$i++)
+        graficZScoreWeightForLenghtBoy[i]=new Array();
+            j=0;
+            k=0;
+            @php $k=0; @endphp
+            @for($j=0;$j<651;$j++)
+                if(j==0){
+                    @if($i+2==count($graficZScoreWeightForLenghtBoy))
+                        @if($k+1<count($graficZScoreWeightForLenghtBoy[$i]))
+                            
+                            @foreach($graficZScoreWeightForLenghtBoy[$i] as $g)
+                            @if($k==0)
+                                    graficZScoreWeightForLenghtBoy[i][k]="{{$graficZScoreWeightForLenghtBoy[$i][$k]}}";
+                                    k++;
+                                    @php $k++; @endphp
+                                @else  
+                                    graficZScoreWeightForLenghtBoy[i][k]={{$graficZScoreWeightForLenghtBoy[$i][$k]}}
+                                    k++;    
+                                    @php $k++; @endphp
+                                @endif
+                            @endforeach
+                        
+                        @endif
+                    @else
+                        @if($i+1==count($graficZScoreWeightForLenghtBoy))
+                            
+                            @if($k+1<count($graficZScoreWeightForLenghtBoy[$i]))
+                                
+                                @foreach($graficZScoreWeightForLenghtBoy[$i] as $g)
+                                @if($k==0)
+                                        graficZScoreWeightForLenghtBoy[i][k]="{{$graficZScoreWeightForLenghtBoy[$i][$k]}}";
+                                        k++;
+                                        @php $k++; @endphp
+                                    @else  
+                                        graficZScoreWeightForLenghtBoy[i][k]={{$graficZScoreWeightForLenghtBoy[$i][$k]}}
+                                        k++;    
+                                        @php $k++; @endphp
+                                    @endif
+                                @endforeach
+                            
+                            @endif
+                        @else        
+                            graficZScoreWeightForLenghtBoy[i][k]="{{$graficZScoreWeightForLenghtBoy[$i][$j]}}";
+                            k++;
+                        @endif
+                    @endif
+                }
+                else{ 
+                    @if($k==0)  
+                    if(j%1==0){
+                        graficZScoreWeightForLenghtBoy[i][k]={{$graficZScoreWeightForLenghtBoy[$i][$j]}}
+                        k++;
+                    }
+                    @endif
+                }
+                j++;
+            @endfor
+            i++;
+        @endfor
+        console.log(graficZScoreWeightForLenghtBoy)
+        var graficZScoreWeightForLenghtBoy = c3.generate({
+            bindto: '#graficZScoreWeightForLenghtBoy',
+            data: {
+                xs: {
+                    'SD2neg': 'x',
+                    'SD1neg': 'x',
+                    'SD0': 'x',
+                    'SD1': 'x',
+                    'SD2': 'x',
+                    'Visita': 'weight',
+                },
+                columns:graficZScoreWeightForLenghtBoy ,
+                type: 'spline',
+                colors:{
+                    SD2neg:'#000000',
+                    SD1neg:'gray',
+                    SD0:'green',
+                    SD1:'gray',
+                    SD2:'#000000',
+                    Visita:'red'
+                }
+            },
+            axis: {
+                x: {
+                    label: {
+                        text: 'Estatura (cm)',
+                        position: 'outer-center'
+                        // inner-right : default
+                        // inner-center
+                        // inner-left
+                        // outer-right
+                        // outer-center
+                        // outer-left
+                    }
+                },
+                y: {
+                    label: {
+                        text: 'Peso (Kg)',
+                        position: 'outer-middle'
+                        // inner-top : default
+                        // inner-middle
+                        // inner-bottom
+                        // outer-top
+                        // outer-middle
+                        // outer-bottom
+                    }
                 }
             }
         });

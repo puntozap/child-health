@@ -90,7 +90,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
             array_push($graficZScoreWeightForLenghtGirl[3],$z->SD1);
             array_push($graficZScoreWeightForLenghtGirl[4],$z->SD2);
         }
-        $graficZScoreWeightForLenghtBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
+        $graficZScoreWeightForLenghtBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],['x']];
         // // dd($grafic);
         foreach($ZScoreWeightForLenghtBoy as $z){
             array_push($graficZScoreWeightForLenghtBoy[0],$z->SD2neg);
@@ -98,6 +98,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
             array_push($graficZScoreWeightForLenghtBoy[2],$z->SD0);
             array_push($graficZScoreWeightForLenghtBoy[3],$z->SD1);
             array_push($graficZScoreWeightForLenghtBoy[4],$z->SD2);
+            array_push($graficZScoreWeightForLenghtBoy[5],$z->lenght);
         }
         $graficZScoreWeightForHeightBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2']];
         // // dd($grafic);
@@ -128,6 +129,20 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
         }
         // dd($grafic);
         // dd($view);
+
+
+        $graficZScoreGirlx=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],['x']];
+        $age=[['x']];
+        // // dd($grafic);
+        foreach($ZScoreGirl as $z){
+            array_push($graficZScoreGirlx[0],$z->SD2neg);
+            array_push($graficZScoreGirlx[1],$z->SD1neg);
+            array_push($graficZScoreGirlx[2],$z->SD0);
+            array_push($graficZScoreGirlx[3],$z->SD1);
+            array_push($graficZScoreGirlx[4],$z->SD2);
+            array_push($graficZScoreGirlx[5],$z->days);
+        }
+        // dd($age);
         $ZScoreLengthBoy = ZScoreLengthBoy::get();
         $ZScoreWeightForHeightGirl = ZScoreWeightForHeightGirl::get();
         $ZScoreWeightForLenghtGirl = ZScoreWeightForLenghtGirl::get();
@@ -137,6 +152,7 @@ class GraficasController extends \TCG\Voyager\Http\Controllers\Controller
         $ZScoreWeightGirl = ZScoreWeightGirl::get();
         return Voyager::view($view, compact(
             'ZScoreGirl',
+            'graficZScoreGirlx',
             'graficZScoreGirl',
             'ZScoreWeightForHeightGirl',
             'ZScoreWeightForLenghtGirl',

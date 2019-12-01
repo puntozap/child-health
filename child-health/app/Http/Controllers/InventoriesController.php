@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers;;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Request;
@@ -13,12 +13,10 @@ use TCG\Voyager\Events\BreadDataUpdated;
 use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
-use App\User;
-use App\Country;
-use App\State;
-use App\Municipality;
-use App\Parish;
-class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
+use App\Formula;
+use App\Inventory;
+
+class InventoriesController extends  \TCG\Voyager\Http\Controllers\Controller
 {
     use BreadRelationshipParser;
 
@@ -34,16 +32,15 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function index(Request $request)
+    public function index(Request $request,$formula_id)
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
-
-        // dd("index");
         // $slug = $this->getSlug($request);
-        $slug='users';
+        $slug='inventories';
+
         // GET THE DataType based on the slug
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
-        // dd($dataType);
+
         // Check permission
         $this->authorize('browse', app($dataType->model_name));
 
@@ -66,7 +63,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
                 $orderColumn = [[$index, 'desc']];
             }
         }
-        // dd($orderBy);
+
         // Next Get or Paginate the actual content from the MODEL that corresponds to the slug DataType
         if (strlen($dataType->model_name) != 0) {
             $model = app($dataType->model_name);
@@ -120,26 +117,29 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         if (($isModelTranslatable = is_bread_translatable($model))) {
             $dataTypeContent->load('translations');
         }
-        $dataTypeContent=User::where("role_id",6)->get();
-        // dd($dataTypeContent);
+
         // Check if server side pagination is enabled
         $isServerSide = isset($dataType->server_side) && $dataType->server_side;
-
+        $dataTypeContent=Inventory::where("formula_id",$formula_id)->get();
+        $Inventory=Inventory::select(DB::raw("sum(quantity_receive) as quantity"),"formulas.name as formula_name")->join("formulas","formulas.id","=","inventories.formula_id")->groupBy("formulas.name")->where("formula_id",$formula_id)->get();
+        $Formula=Formula::find($formula_id);
         // Check if a default search key is set
         $defaultSearchKey = $dataType->default_search_key ?? null;
 
-        $view = 'voyager.children.browse';
+        $view = 'voyager::bread.browse';
 
-        if (view()->exists("voyager::children.browse")) {
-            $view = "voyager::children.browse";
+        if (view()->exists("voyager::$slug.browse")) {
+            $view = "voyager::$slug.browse";
         }
-        // dd($view);
 
         return Voyager::view($view, compact(
             'dataType',
             'dataTypeContent',
             'isModelTranslatable',
             'search',
+            'Formula',
+            'Inventory',
+            'formula_id',
             'orderBy',
             'orderColumn',
             'sortOrder',
@@ -165,9 +165,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function show(Request $request, $id)
     {
-        // dd("show");
-        // $slug = $this->getSlug($request);
-        $slug="users";
+        $slug = $this->getSlug($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
@@ -205,7 +203,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
         $view = 'voyager::bread.read';
-        $slug="children";
+
         if (view()->exists("voyager::$slug.read")) {
             $view = "voyager::$slug.read";
         }
@@ -225,11 +223,10 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function edit(Request $request, $id)
+    public function edit(Request $request, $id,$formula_id)
     {
-        // dd("edit");
         // $slug = $this->getSlug($request);
-        $slug="users";
+        $slug='inventories';
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
         if (strlen($dataType->model_name) != 0) {
@@ -261,24 +258,21 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = 'voyager.children.edit-add';
-        $slug="children";
+        $view = 'voyager::bread.edit-add';
+
         if (view()->exists("voyager::$slug.edit-add")) {
             $view = "voyager::$slug.edit-add";
         }
-        // dd($view);
-        $Country=Country::get();
-        $State=State::get();
-        $Municipality=Municipality::get();
-        $Parish=Parish::get();
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','Country'));
+
+        return Voyager::view($view, compact('dataType','id', 'dataTypeContent', 'isModelTranslatable',"formula_id"));
     }
 
     // POST BR(E)AD
-    public function update(Request $request, $id)
+    public function update(Request $request, $id,$formula_id)
     {
+        // dd("hola");
         // $slug = $this->getSlug($request);
-        $slug="users";
+        $slug='inventories';
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
@@ -303,16 +297,8 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
 
         event(new BreadDataUpdated($dataType, $data));
-        $User=User::find($id);
-        $User->country_id=$request['country_id'];
-        $User->state_id=$request['state_id'];
-        $User->municipality_id=$request['municipality_id'];
-        $User->parish_id=$request['parish_id'];
-        $User->address=$request['address'];
-        // dd($User);
-        $User->role_id=6;
-        $User->save();
-        return redirect("/admin/children")
+
+        return redirect("/admin/formulas/inventories/".$formula_id)
         ->with([
             'message'    => __('voyager::generic.successfully_updated')." {$dataType->display_name_singular}",
             'alert-type' => 'success',
@@ -332,11 +318,12 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //
     //****************************************
 
-    public function create(Request $request)
+    public function create(Request $request,$formula_id)
     {
-        // dd("create");
         // $slug = $this->getSlug($request);
-        $slug='users';
+        $slug='inventories';
+
+
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
         // Check permission
@@ -347,27 +334,22 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
                             : false;
 
         foreach ($dataType->addRows as $key => $row) {
-                $dataType->addRows[$key]['col_width'] = $row->details->width ?? 100;
+            $dataType->addRows[$key]['col_width'] = $row->details->width ?? 100;
         }
-        // dd($dataType->addRows);
+
         // If a column has a relationship associated with it, we do not want to show that field
         $this->removeRelationshipField($dataType, 'add');
 
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
 
-        $view = 'voyager.children.edit-add';
+        $view = 'voyager::bread.edit-add';
 
-        if (view()->exists("voyager::children.edit-add")) {
-            $view = "voyager::children.edit-add";
+        if (view()->exists("voyager::$slug.edit-add")) {
+            $view = "voyager::$slug.edit-add";
         }
-        // dd($view);
-        $Country=Country::get();
-        $State=State::get();
-        $Municipality=Municipality::get();
-        $Parish=Parish::get();
-        // dd($Country);
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','Country','State','Municipality','Parish'));
+
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','formula_id'));
     }
 
     /**
@@ -377,35 +359,27 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request,$formula_id)
     {
-        // dd($request);
         // $slug = $this->getSlug($request);
-        $slug="users";
+        $slug='inventories';
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
-        // dd($dataType);
+
         // Check permission
         $this->authorize('add', app($dataType->model_name));
 
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
-        // dd($data);
-        $User=User::find($data->id);
-        $User->country_id=$request['country_id'];
-        $User->state_id=$request['state_id'];
-        $User->municipality_id=$request['municipality_id'];
-        $User->parish_id=$request['parish_id'];
-        $User->address=$request['address'];
-        $User->role_id=6;
-        $User->save();
+        $Inventory=Inventory::find($data->id);
+        $Inventory->formula_id=$formula_id;
+        $Inventory->save();
         event(new BreadDataAdded($dataType, $data));
 
-        return redirect()
-        ->route("children.index")
+        return redirect("admin/formulas/inventories/".$formula_id)
         ->with([
-                'message'    => __('voyager::generic.successfully_added_new')." probando",
+                'message'    => __('voyager::generic.successfully_added_new')." {$dataType->display_name_singular}",
                 'alert-type' => 'success',
             ]);
     }
@@ -424,9 +398,10 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
     public function destroy(Request $request, $id)
     {
-        dd("destroy");
+        // dd($request);
         // $slug = $this->getSlug($request);
-        $slug="users";
+        $slug='inventories';
+
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
         // Check permission
@@ -437,12 +412,17 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         if (empty($id)) {
             // Bulk delete, get IDs from POST
             $ids = explode(',', $request->ids);
+            // dd($ids);
         } else {
             // Single item delete, get ID from URL
             $ids[] = $id;
         }
+        $formula_id="";
         foreach ($ids as $id) {
             // dd($id);
+            $Inventory=Inventory::find($id);
+            // dd($Inventory);
+            $formula_id=$Inventory->formula_id;
             $data = call_user_func([$dataType->model_name, 'findOrFail'], $id);
 
             $model = app($dataType->model_name);
@@ -468,7 +448,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             event(new BreadDataDeleted($dataType, $data));
         }
 
-        return redirect("/admin/children")->with($data);
+        return redirect("/admin/formulas/inventories/".$formula_id)->with($data);
     }
 
     public function restore(Request $request, $id)
@@ -720,21 +700,5 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
         // No result found, return empty array
         return response()->json([], 404);
-    }
-    
-    public function searchStateCountry($id){
-        $State=State::where("country_id",$id)->get();
-        
-        return response()->json($State);
-    }
-    public function searchMunicipalityState($id){
-        $Municipality=Municipality::where("state_id",$id)->get();
-        
-        return response()->json($Municipality);
-    }
-    public function searchParishMunicipality($id){
-        $Parish=Parish::where("municipality_id",$id)->get();
-        
-        return response()->json($Parish);
     }
 }

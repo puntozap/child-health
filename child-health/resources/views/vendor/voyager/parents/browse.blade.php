@@ -43,6 +43,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-bordered">
+                <a href="/admin/children/visits/{{$id}}" class="btn btn-dark btn-block"><i class="voyager-person"></i> Ir al registro visita de niño </a>
                     <div class="panel-body">
                         @if ($isServerSide)
                             <form method="get" class="form-search">

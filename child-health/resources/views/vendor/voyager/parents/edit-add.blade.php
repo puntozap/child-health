@@ -121,7 +121,7 @@
                             @stop
                             @yield('submit-buttons')
                         </div>
-                        <input type="hidden" name="child_id" value="{{$child_id}}">
+                        <input type="hidden" name="child_id" value="{{$id}}">
                     </form>
 
                     <iframe id="form_target" name="form_target" style="display:none"></iframe>

@@ -23,6 +23,8 @@ use App\ZScoreWeightForLenghtBoy;
 use App\ZScoreWeightForHeightBoy;
 use App\ZScoreWeightBoy;
 use App\ZScoreWeightGirl;
+use App\Formula;
+use App\Inventory;
 class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
 {
     use BreadRelationshipParser;
@@ -66,10 +68,11 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
         // dd($view);
         $ZScoreLengthBoy = ZScoreLengthBoy::get();
         $ZScoreWeightBoy = ZScoreWeightBoy::get();
+        $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtBoy::get();
 
-        $graficZScoreLengthBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],["Visitas"]];
+        $graficZScoreLengthBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],["x"],['Visitas'],['age']];
         $Visit=Visit::where("child_user_id",$child_id)->get();
-        // // dd($grafic);
+        // dd($Visit);
         $i=0;
         foreach($ZScoreLengthBoy as $z){
             array_push($graficZScoreLengthBoy[0],$z->SD2neg);
@@ -77,12 +80,15 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
             array_push($graficZScoreLengthBoy[2],$z->SD0);
             array_push($graficZScoreLengthBoy[3],$z->SD1);
             array_push($graficZScoreLengthBoy[4],$z->SD2);
+            array_push($graficZScoreLengthBoy[5],$z->days);
             if(isset($Visit[$i]->length)){
-                array_push($graficZScoreLengthBoy[5],$Visit[$i]->length);
+                array_push($graficZScoreLengthBoy[6],$Visit[$i]->length);
+                array_push($graficZScoreLengthBoy[7],$Visit[$i]->age);
             }
+            
             $i++;
         }
-        $graficZScoreWeightBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],["Visitas"]];
+        $graficZScoreWeightBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],["x"],['Visitas'],['age']];
         // // dd($grafic);
         $i=0;
         foreach($ZScoreWeightBoy as $z){
@@ -91,15 +97,35 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
             array_push($graficZScoreWeightBoy[2],$z->SD0);
             array_push($graficZScoreWeightBoy[3],$z->SD1);
             array_push($graficZScoreWeightBoy[4],$z->SD2);
+            array_push($graficZScoreWeightBoy[5],$z->days);
             if(isset($Visit[$i]->weight)){
-                array_push($graficZScoreWeightBoy[5],$Visit[$i]->weight);
+                array_push($graficZScoreWeightBoy[6],$Visit[$i]->weight);
+                array_push($graficZScoreWeightBoy[7],$Visit[$i]->age);
             }
+            
+            $i++;
+        }
+        // dd($graficZScoreWeightBoy[7]);
+        $graficZScoreWeightForLenghtBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],['x'],['Visita'],["weight"]];
+        // // dd($grafic);
+        $i=0;
+        foreach($ZScoreWeightForLenghtBoy as $z){
+            array_push($graficZScoreWeightForLenghtBoy[0],$z->SD2neg);
+            array_push($graficZScoreWeightForLenghtBoy[1],$z->SD1neg);
+            array_push($graficZScoreWeightForLenghtBoy[2],$z->SD0);
+            array_push($graficZScoreWeightForLenghtBoy[3],$z->SD1);
+            array_push($graficZScoreWeightForLenghtBoy[4],$z->SD2);
+            array_push($graficZScoreWeightForLenghtBoy[5],$z->lenght);
+            if(isset($Visit[$i]->weight)){
+                array_push($graficZScoreWeightForLenghtBoy[6],$Visit[$i]->weight);
+                array_push($graficZScoreWeightForLenghtBoy[7],$Visit[$i]->length);
+            }
+            
             $i++;
         }
         
-        
-        // dd($graficZScoreWeightBoy[5]);
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','graficZScoreLengthBoy','graficZScoreWeightBoy'));
+        // dd(count($graficZScoreWeightForLenghtBoy[6]));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','graficZScoreLengthBoy','graficZScoreWeightBoy','graficZScoreWeightForLenghtBoy'));
     }
     public function index(Request $request,$id)
     {
@@ -325,8 +351,9 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
 
         // Check permission
         $this->authorize('edit', $dataTypeContent);
-        $User=User::find($id);
-
+        $User=User::find($child_id);
+        // dd($User);
+        $Formula=Formula::select(DB::raw("sum(inventories.quantity_receive) as quantity"),"formulas.name as formula_name","formulas.id as formula_id")->join("inventories","inventories.formula_id","=","formulas.id")->groupBy("formulas.name",'formulas.id')->get();
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
         
@@ -336,7 +363,7 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
             $view = "voyager::$slug.edit-add";
         }
 
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','child_id','id','User'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','child_id','id','User','Formula'));
     }
 
     // POST BR(E)AD
@@ -413,13 +440,15 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
         $User=User::find($id);
+        $Formula=Formula::select(DB::raw("sum(inventories.quantity_receive) as quantity"),"formulas.name as formula_name","formulas.id as formula_id")->join("inventories","inventories.formula_id","=","formulas.id")->groupBy("formulas.name",'formulas.id')->get();
+        // dd($Formula);
         $view = 'voyager::bread.edit-add';
 
         if (view()->exists("voyager::$slug.edit-add")) {
             $view = "voyager::$slug.edit-add";
         }
         $child_id=$id;
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','id','User','child_id'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','id','User','child_id','Formula'));
     }
 
     /**
@@ -448,7 +477,19 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
         // dd($Visit);
         $Visit->child_user_id=$id;
         $Visit->register_user_id=\Auth::id();
+        $Visit->formula_id=$request->formula_id;
         $Visit->save();
+        $Inventory=Inventory::where("formula_id",$request->formula_id)->get();
+        // dd();
+        foreach($Inventory as $inv){
+            if($inv->quantity_receive>0){
+                $InventoryRefresh=Inventory::find($inv->id);
+                $InventoryRefresh->quantity_receive=$InventoryRefresh->quantity_receive-1;
+                $InventoryRefresh->quantity_delivered=$InventoryRefresh->quantity_delivered+1;
+                $InventoryRefresh->save();
+            break;
+            }
+        }
         event(new BreadDataAdded($dataType, $data));
 
         return redirect('admin/children/visits/'.$id)
@@ -491,7 +532,11 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
             // Single item delete, get ID from URL
             $ids[] = $id;
         }
+        $user_id='';
         foreach ($ids as $id) {
+            $Visit=Visit::find($id);
+            // dd($id);
+            $user_id=$Visit->child_user_id;
             $data = call_user_func([$dataType->model_name, 'findOrFail'], $id);
 
             $model = app($dataType->model_name);
@@ -517,7 +562,7 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
             event(new BreadDataDeleted($dataType, $data));
         }
 
-        return redirect('/admin/children/visits/'.$request->reload)->with($data);
+        return redirect('/admin/children/visits/'.$user_id)->with($data);
     }
 
     public function restore(Request $request, $id)

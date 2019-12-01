@@ -1,21 +1,14 @@
 @extends('voyager::master')
-@section('page_title', "Registrar paciente")
-@section("css")
-<style>
-    #dataTable #bread-actions a, .actions a.btn{
-        width: 100%;
-        display: inline-block;
-    }
-</style>
-@endsection
-@section('page_header')
 
+@section('page_title', __('voyager::generic.viewing').' '.$dataType->display_name_plural)
+
+@section('page_header')
     <div class="container-fluid">
         <h1 class="page-title">
-            <i class="{{ $dataType->icon }}"></i> {{ 'Niños/Niñas' }}
+            <i class="{{ $dataType->icon }}"></i> {{ $dataType->display_name_plural }}
         </h1>
         @can('add', app($dataType->model_name))
-            <a href="/admin/children/create" class="btn btn-success btn-add-new">
+            <a href="/admin/formulas/inventories/{{$formula_id}}/create" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
@@ -45,11 +38,17 @@
 
 @section('content')
     <div class="page-content browse container-fluid">
-        
         @include('voyager::alerts')
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-bordered">
+                    <table class="table">
+                        <tr class="text-center">
+                            <td class="btn-dark text-uppercase">Cantidad de Formulas para el producto {{isset($Inventory[0]->formula_name)?$Inventory[0]->formula_name:$Formula->name}}</td>
+                            <td class="btn-dark">{{isset($Inventory[0]->quantity)?$Inventory[0]->quantity:"0"}}</td>
+                        </tr>
+                        <tr class="text-center"></tr>
+                    </table>
                     <div class="panel-body">
                         @if ($isServerSide)
                             <form method="get" class="form-search">
@@ -87,7 +86,6 @@
                                                 <input type="checkbox" class="select_all">
                                             </th>
                                         @endcan
-                                        
                                         @foreach($dataType->browseRows as $row)
                                         <th>
                                             @if ($isServerSide)
@@ -252,18 +250,9 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                                <div class="dropdown ">
-                                                    <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                        Accion del paciente
-                                                    </a>
-
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                                        <a class="dropdown-item" href="/admin/children/{{$data->id}}/edit">Editar Paciente</a>
-                                                        <a class="dropdown-item" href="/admin/children/parents/{{$data->id}}">Agregar Representantes</a>
-                                                        <a class="dropdown-item" href="/admin/children/visits/{{$data->id}}">Lista de Visitas al paciente</a>
-                                                    </div>
-                                                </div>
-                                            
+                                            <a href="/admin/formulas/inventories/{{$data->id}}/{{$formula_id}}/edit" title="Editar" class="btn btn-sm btn-primary btn-block edit">
+                                                <i class="voyager-edit"></i> <span class="hidden-xs hidden-sm">Editar</span>
+                                            </a>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -360,7 +349,7 @@
 
         var deleteFormAction;
         $('td').on('click', '.delete', function (e) {
-            $('#delete_form')[0].action = '/admin/children/'+$(this).data('id');            
+            $('#delete_form')[0].action = '{{ route('voyager.'.$dataType->slug.'.destroy', ['id' => '__id']) }}'.replace('__id', $(this).data('id'));
             $('#delete_modal').modal('show');
         });
 
@@ -391,10 +380,15 @@
             $('input[name="row_id"]').each(function() {
                 if ($(this).is(':checked')) {
                     ids.push($(this).val());
-                    // alert()
+                    // 
+                    
                 }
             });
             $('.selected_ids').val(ids);
+        });
+        
+        $(".btn-add-new").click(function{
+            
         });
     </script>
 @stop

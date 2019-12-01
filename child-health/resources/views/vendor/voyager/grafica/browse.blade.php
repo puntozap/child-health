@@ -45,6 +45,11 @@
                             <label for="">8 Puntuacion Z Peso por height ninos</label>
                             <div id="graficZScoreWeightForHeightBoy"></div>
                         </div>
+
+                        <div class="col-md-12">
+                            <label for="">2 Puntuacion Z talla segun la edad nima</label>
+                            <div id="graficZScoreGirlx"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -301,6 +306,13 @@
         var graficZScoreWeightForLenghtBoy = c3.generate({
             bindto: '#graficZScoreWeightForLenghtBoy',
             data: {
+                xs: {
+                    'SD2neg': 'x',
+                    'SD1neg': 'x',
+                    'SD0': 'x',
+                    'SD1': 'x',
+                    'SD2': 'x',
+                },
                 columns:graficZScoreWeightForLenghtBoy ,
                 type: 'spline'
             }
@@ -372,6 +384,48 @@
             bindto: '#graficZScoreWeightForHeightBoy',
             data: {
                 columns:graficZScoreWeightForHeightBoy ,
+                type: 'spline'
+            }
+        });
+
+    </script>
+    <script>
+        var graficZScoreGirlx=[];
+        var i=0,j=0,k=0;
+        @for($i=0;$i<count($graficZScoreGirlx);$i++)
+        graficZScoreGirlx[i]=new Array();
+            j=0;
+            k=0;
+            @for($j=0;$j<364;$j++)
+                if(j==0){
+                    graficZScoreGirlx[i][k]="{{$graficZScoreGirlx[$i][$j]}}";
+                    k++;
+                    graficZScoreGirlx[i][k]={{$graficZScoreGirlx[$i][$j+1]}}
+                    k++;
+                }
+                else{ 
+                    if(j%7==0){
+                        graficZScoreGirlx[i][k]={{$graficZScoreGirlx[$i][$j]}}
+                        k++;
+                    }
+                }
+                j++;
+            @endfor
+            i++;
+        @endfor
+        console.log(graficZScoreGirlx)
+        var graficZScoreGirlx = c3.generate({
+            bindto: '#graficZScoreGirlx',
+            
+            data: {
+                xs: {
+                    'SD2neg': 'x',
+                    'SD1neg': 'x',
+                    'SD0': 'x',
+                    'SD1': 'x',
+                    'SD2': 'x',
+                },
+                columns:graficZScoreGirlx ,
                 type: 'spline'
             }
         });

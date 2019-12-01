@@ -1,21 +1,14 @@
 @extends('voyager::master')
-@section('page_title', "Registrar paciente")
-@section("css")
-<style>
-    #dataTable #bread-actions a, .actions a.btn{
-        width: 100%;
-        display: inline-block;
-    }
-</style>
-@endsection
-@section('page_header')
 
+@section('page_title', __('voyager::generic.viewing').' '.$dataType->display_name_plural)
+
+@section('page_header')
     <div class="container-fluid">
         <h1 class="page-title">
-            <i class="{{ $dataType->icon }}"></i> {{ 'Niños/Niñas' }}
+            <i class="{{ $dataType->icon }}"></i> {{ $dataType->display_name_plural }}
         </h1>
         @can('add', app($dataType->model_name))
-            <a href="/admin/children/create" class="btn btn-success btn-add-new">
+            <a href="{{ route('voyager.'.$dataType->slug.'.create') }}" class="btn btn-success btn-add-new">
                 <i class="voyager-plus"></i> <span>{{ __('voyager::generic.add_new') }}</span>
             </a>
         @endcan
@@ -45,7 +38,6 @@
 
 @section('content')
     <div class="page-content browse container-fluid">
-        
         @include('voyager::alerts')
         <div class="row">
             <div class="col-md-12">
@@ -87,7 +79,6 @@
                                                 <input type="checkbox" class="select_all">
                                             </th>
                                         @endcan
-                                        
                                         @foreach($dataType->browseRows as $row)
                                         <th>
                                             @if ($isServerSide)
@@ -252,18 +243,7 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
-                                                <div class="dropdown ">
-                                                    <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                                        Accion del paciente
-                                                    </a>
-
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                                        <a class="dropdown-item" href="/admin/children/{{$data->id}}/edit">Editar Paciente</a>
-                                                        <a class="dropdown-item" href="/admin/children/parents/{{$data->id}}">Agregar Representantes</a>
-                                                        <a class="dropdown-item" href="/admin/children/visits/{{$data->id}}">Lista de Visitas al paciente</a>
-                                                    </div>
-                                                </div>
-                                            
+                                            <a href="/admin/formulas/inventories/{{$data->id}}" class="btn btn-primary btn-block">Agregar Inventario</a>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -360,7 +340,7 @@
 
         var deleteFormAction;
         $('td').on('click', '.delete', function (e) {
-            $('#delete_form')[0].action = '/admin/children/'+$(this).data('id');            
+            $('#delete_form')[0].action = '{{ route('voyager.'.$dataType->slug.'.destroy', ['id' => '__id']) }}'.replace('__id', $(this).data('id'));
             $('#delete_modal').modal('show');
         });
 
@@ -391,7 +371,6 @@
             $('input[name="row_id"]').each(function() {
                 if ($(this).is(':checked')) {
                     ids.push($(this).val());
-                    // alert()
                 }
             });
             $('.selected_ids').val(ids);
