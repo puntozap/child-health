@@ -204,9 +204,9 @@
             });
             $('[data-toggle="tooltip"]').tooltip();
         });
-            $('input[name="register_date"]').val('{{date("Y-m-d")}}');
             @if(!$edit)
             $('input[name="quantity_delivered"]').val(0);
+            $('input[name="register_date"]').val('{{date("Y-m-d")}}');
             @endif
     </script>
 @stop

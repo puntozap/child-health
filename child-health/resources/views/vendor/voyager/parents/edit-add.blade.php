@@ -296,6 +296,17 @@
                 }
             });
         }
+        $("select[name='pathology_id']").attr("disabled","disabled");
+        var band=0;
+        $("input[name='pathology']").change(function(){
+            if(band==0){
+                $("select[name='pathology_id']").removeAttr('disabled');
+                band=1;
+            }else{
+                $("select[name='pathology_id']").attr("disabled","disabled");
+                band=0;
+            }
+        });
     </script>
     <script>
         @if(isset($dataTypeContent))
