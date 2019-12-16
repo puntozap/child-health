@@ -45,7 +45,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
         // dd($dataType);
         // Check permission
-        $this->authorize('browse', app($dataType->model_name));
+        // $this->authorize('browse', app($dataType->model_name));
 
         $getter = $dataType->server_side ? 'paginate' : 'get';
 
@@ -256,7 +256,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $this->removeRelationshipField($dataType, 'edit');
 
         // Check permission
-        $this->authorize('edit', $dataTypeContent);
+        // $this->authorize('edit', $dataTypeContent);
 
         // Check if BREAD is Translatable
         $isModelTranslatable = is_bread_translatable($dataTypeContent);

@@ -59,9 +59,8 @@
                                 <input type="number" class="form-control" id="dni">
                             </div> -->
                             @foreach($dataTypeRows as $row)
-                            
                                 <!-- GET THE DISPLAY OPTIONS -->
-                                @if($row->id!=9&&$row->id!=10)
+                                @if($row->id!=9&&$row->id!=10&&$row->id!=4&&$row->id!=3)
                                     @php
                                         $display_options = $row->details->display ?? NULL;
                                         if ($dataTypeContent->{$row->field.'_'.($edit ? 'edit' : 'add')}) {
@@ -302,8 +301,25 @@
                 }
             });
         }
-        $("select[name='pathology_id']").attr("disabled","disabled");
         var band=0;
+        @if(!$edit)
+            if($("input[name='pathology']").is(':checked')){
+                band=1;
+                $("select[name='pathology_id']").removeAttr('disabled');
+            }else{
+                $("select[name='pathology_id']").attr("disabled","disabled");
+                band=0;
+            }
+        @else
+            if($("input[name='pathology']").is(':checked')){
+                band=1;
+                $("select[name='pathology_id']").removeAttr('disabled');
+            }else{
+                $("select[name='pathology_id']").attr("disabled","disabled");
+                band=0;
+                
+            }
+        @endif
         $("input[name='pathology']").change(function(){
             if(band==0){
                 $("select[name='pathology_id']").removeAttr('disabled');

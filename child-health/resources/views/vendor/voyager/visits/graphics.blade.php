@@ -151,12 +151,21 @@
                 columns:graficZScoreLengthBoy ,
                 type: 'spline',
                 colors:{
+                    @if($User->sex==1)
                     SD2neg:'#000000',
                     SD1neg:'gray',
                     SD0:'green',
                     SD1:'gray',
                     SD2:'#000000',
                     Visitas:'red',
+                    @else//#ED4C67
+                    SD2neg:'#ED4C67',
+                    SD1neg:'#FDA7DF',
+                    SD0:'green',
+                    SD1:'#FDA7DF',
+                    SD2:'#ED4C67',
+                    Visitas:'#1B1464',
+                    @endif
                 }
             },
             axis: {
@@ -337,12 +346,21 @@
                 columns:graficZScoreWeightBoy ,
                 type: 'spline',
                 colors:{
+                    @if($User->sex==1)
                     SD2neg:'#000000',
                     SD1neg:'gray',
                     SD0:'green',
                     SD1:'gray',
                     SD2:'#000000',
                     Visitas:'red',
+                    @else//#ED4C67
+                    SD2neg:'#ED4C67',
+                    SD1neg:'#FDA7DF',
+                    SD0:'green',
+                    SD1:'#FDA7DF',
+                    SD2:'#ED4C67',
+                    Visitas:'#1B1464',
+                    @endif
                 }
             },
             axis: {
@@ -455,12 +473,21 @@
                 columns:graficZScoreWeightForLenghtBoy ,
                 type: 'spline',
                 colors:{
+                    @if($User->sex==1)
                     SD2neg:'#000000',
                     SD1neg:'gray',
                     SD0:'green',
                     SD1:'gray',
                     SD2:'#000000',
-                    Visita:'red'
+                    Visitas:'red',
+                    @else
+                    SD2neg:'#ED4C67',
+                    SD1neg:'#FDA7DF',
+                    SD0:'green',
+                    SD1:'#FDA7DF',
+                    SD2:'#ED4C67',
+                    Visita:'#1B1464',
+                    @endif
                 }
             },
             axis: {

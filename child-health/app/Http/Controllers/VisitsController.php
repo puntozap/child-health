@@ -66,13 +66,21 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
 
         $view = 'voyager::'.$slug.'.graphics';
         // dd($view);
-        $ZScoreLengthBoy = ZScoreLengthBoy::get();
-        $ZScoreWeightBoy = ZScoreWeightBoy::get();
-        $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtBoy::get();
+        
 
         $graficZScoreLengthBoy=[['SD2neg'],['SD1neg'],['SD0'],['SD1'],['SD2'],["x"],['Visitas'],['age']];
         $Visit=Visit::where("child_user_id",$child_id)->get();
-        // dd($Visit);
+        $User=User::find($child_id);
+        // dd($User);
+        if($User->sex==1){
+        $ZScoreLengthBoy = ZScoreLengthBoy::get();
+        $ZScoreWeightBoy = ZScoreWeightBoy::get();
+        $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtBoy::get();
+        }else{
+            $ZScoreLengthBoy = ZScoreLengthGirl::get();
+            $ZScoreWeightBoy = ZScoreWeightGirl::get();
+            $ZScoreWeightForLenghtBoy = ZScoreWeightForLenghtGirl::get();
+        }
         $i=0;
         foreach($ZScoreLengthBoy as $z){
             array_push($graficZScoreLengthBoy[0],$z->SD2neg);
@@ -125,7 +133,7 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
         }
         
         // dd(count($graficZScoreWeightForLenghtBoy[6]));
-        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','graficZScoreLengthBoy','graficZScoreWeightBoy','graficZScoreWeightForLenghtBoy'));
+        return Voyager::view($view, compact('dataType', 'dataTypeContent', 'isModelTranslatable','graficZScoreLengthBoy','graficZScoreWeightBoy','graficZScoreWeightForLenghtBoy',"User"));
     }
     public function index(Request $request,$id)
     {

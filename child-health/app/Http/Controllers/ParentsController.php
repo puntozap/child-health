@@ -264,6 +264,7 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
         $isModelTranslatable = is_bread_translatable($dataTypeContent);
         $slug="parents";
         $dataTypeContent=User::find($child_id);
+        // dd($dataTypeContent);
         if (view()->exists("voyager::$slug.edit-add")) {
             $view = "voyager::$slug.edit-add";
         }
@@ -278,16 +279,16 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
     }
 
     // POST BR(E)AD
-    public function update(Request $request, $id)
+    public function update(Request $request, $id,$child_id)
     {
         // $slug = $this->getSlug($request);
-        // dd("hola");
         $slug="users";
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
 
         // Compatibility with Model binding.
         $id = $id instanceof Model ? $id->{$id->getKeyName()} : $id;
+        // dd($id);
 
         $model = app($dataType->model_name);
         if ($dataType->scope && $dataType->scope != '' && method_exists($model, 'scope'.ucfirst($dataType->scope))) {
@@ -308,12 +309,13 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
 
         event(new BreadDataUpdated($dataType, $data));
         $User=User::find($id);
+        // dd($User);
         $User->dni=$request['dni'];
         $User->length=$request['length'];
         $User->weight=$request['weight'];
         $User->user_son_id=$request['user_son_id'];
         $User->save();
-        return redirect("/admin/children/parents/".$request['user_son_id'])
+        return redirect("/admin/children/parents/".$child_id)
         ->with([
             'message'    => __('voyager::generic.successfully_updated')." {$dataType->display_name_singular}",
             'alert-type' => 'success',
@@ -381,6 +383,7 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
         // dd($id);
         // $slug = $this->getSlug($request);
         $slug="users";
+        // dd($request);
 
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
         // dd($dataType);
@@ -390,7 +393,6 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
         // Validate fields with ajax
         $val = $this->validateBread($request->all(), $dataType->addRows)->validate();
         $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
-        // dd($data);
         $User=User::find($data->id);
         $User->dni=$request['dni'];
         $User->length=$request['length'];

@@ -25,8 +25,24 @@
                             </div>
                             <div class="col-md-6 text-center">
                                 <label for="">Cantida de pacientes atendidos</label>
-                                <div id="childrensAattended"></div>
+                                <div id="graphicChild"></div>
 
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label for="">Visitas hechas por meses</label>
+                                <div id="graphicVisit"></div>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label for="">Cantidad de pacientes con patologias</label>
+                                <div id="graphicUserPathologies"></div>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label for="">Cantidad de representantes con patologias</label>
+                                <div id="graphicUserPatologiesParents"></div>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label for="">Cantidad de representantes con patologias</label>
+                                <div id="graficUserPathologiesChild"></div>
                             </div>
                         </div>  
                     </div>
@@ -68,14 +84,14 @@
     <script>
         var graphicInventoryTotalReceivedAndDelivered=[[],[],[],[]];
         i=0;
-        
+        j=0;
         @for($i=0;$i<count($graphicInventoryTotalReceivedAndDelivered);$i++)
-       
-            graphicInventoryTotalReceivedAndDelivered[i][0]='{{$graphicInventoryTotalReceivedAndDelivered[$i][0]}}';
-            graphicInventoryTotalReceivedAndDelivered[i][1]='{{$graphicInventoryTotalReceivedAndDelivered[$i][1]}}';
-            graphicInventoryTotalReceivedAndDelivered[i][2]='{{$graphicInventoryTotalReceivedAndDelivered[$i][2]}}';
-            graphicInventoryTotalReceivedAndDelivered[i][3]='{{$graphicInventoryTotalReceivedAndDelivered[$i][3]}}';
+            @for($j=0;$j<count($graphicInventoryTotalReceivedAndDelivered[$i]);$j++)
+                graphicInventoryTotalReceivedAndDelivered[i][j]='{{$graphicInventoryTotalReceivedAndDelivered[$i][$j]}}';
+                j++;
+            @endfor
             console.log(graphicInventoryTotalReceivedAndDelivered);
+            j=0;
             i++;
         @endfor
         var InventoryTotalReceivedAndDelivered = c3.generate({
@@ -105,5 +121,211 @@
             }
         });
     </script>
-    
+    <script>
+        var graphicChild=[[],[]];
+        i=0;
+        j=0;
+        @for($i=0;$i<count($graphicChild);$i++)
+            @for($j=0;$j<count($graphicChild[$i]);$j++)
+                graphicChild[i][j]='{{$graphicChild[$i][$j]}}';
+                j++;
+            @endfor
+            j=0;
+            i++;
+        @endfor
+        // console.log(graphicChild);
+
+        var graphicChild = c3.generate({
+            bindto: '#graphicChild',
+            data: {
+                columns: graphicChild,
+                type: 'pie'
+            },
+            
+            axis: {
+                x: {
+                    type: 'category', // this needed to load string x value
+                    label: {
+                        text: 'Variacion entre niños y niñas',
+                        position: 'outer-center'
+                    }
+
+                },
+                y:{
+                    label: {
+                        text: 'Cantidad de niños registrados',
+                        position: 'outer-center'
+                    }
+                }
+                
+            }
+        });
+    </script>
+    <script>
+        var graphicVisit=[[],[],[]];
+        i=0;
+        j=0;
+        @for($i=0;$i<count($graphicVisit);$i++)
+            @for($j=0;$j<count($graphicVisit[$i]);$j++)
+                graphicVisit[i][j]='{{$graphicVisit[$i][$j]}}';
+                j++;
+            @endfor
+            
+            // console.log(graphicVisit);
+            j=0;
+            i++;
+        @endfor
+        var graphicVisit = c3.generate({
+            bindto: '#graphicVisit',
+            data: {
+                x : 'x',
+                columns: graphicVisit,
+                type: 'bar'
+            },
+            
+            axis: {
+                x: {
+                    type: 'category', // this needed to load string x value
+                    label: {
+                        text: 'Variacion entre niños y niñas',
+                        position: 'outer-center'
+                    }
+
+                },
+                y:{
+                    label: {
+                        text: 'Cantidad de niños registrados',
+                        position: 'outer-center'
+                    }
+                }
+                
+            }
+        });
+    </script>
+
+    <script>
+        var graphicUserPathologies=[];
+        i=0;
+        j=0;
+        @for($i=0;$i<count($graphicUserPathologies);$i++)
+            graphicUserPathologies[i]=[];
+            @for($j=0;$j<count($graphicUserPathologies[$i]);$j++)
+                graphicUserPathologies[i][j]='{{$graphicUserPathologies[$i][$j]}}';
+                j++;
+            @endfor
+            j=0;
+            i++;
+        @endfor
+        console.log(graphicUserPathologies);
+        var graphicUserPathologies = c3.generate({
+            bindto: '#graphicUserPathologies',
+            data: {
+                columns: graphicUserPathologies,
+                type: 'bar'
+            },
+            
+            axis: {
+                x: {
+                    type: 'category', // this needed to load string x value
+                    label: {
+                        text: 'Patologias captadas en ninos y ninas',
+                        position: 'outer-center'
+                    }
+
+                },
+                y:{
+                    label: {
+                        text: 'Cantidad De ninos y ninas con patologias',
+                        position: 'outer-center'
+                    }
+                }
+                
+            }
+        });
+    </script>
+
+    <script>
+        var graphicUserPatologiesParents=[];
+        i=0;
+        j=0;
+        @for($i=0;$i<count($graphicUserPatologiesParents);$i++)
+            graphicUserPatologiesParents[i]=[];
+            @for($j=0;$j<count($graphicUserPatologiesParents[$i]);$j++)
+                graphicUserPatologiesParents[i][j]='{{$graphicUserPatologiesParents[$i][$j]}}';
+                j++;
+            @endfor
+            j=0;
+            i++;
+        @endfor
+        console.log(graphicUserPatologiesParents);
+        var graphicUserPatologiesParents = c3.generate({
+            bindto: '#graphicUserPatologiesParents',
+            data: {
+                columns: graphicUserPatologiesParents,
+                type: 'bar'
+            },
+            
+            axis: {
+                x: {
+                    type: 'category', // this needed to load string x value
+                    label: {
+                        text: 'Patologias captadas en representantes',
+                        position: 'outer-center'
+                    }
+
+                },
+                y:{
+                    label: {
+                        text: 'Cantidad De representantes con patologias',
+                        position: 'outer-center'
+                    }
+                }
+                
+            }
+        });
+    </script>
+
+
+<script>
+        var graficUserPathologiesChild=[];
+        i=0;
+        j=0;
+        @for($i=0;$i<count($graficUserPathologiesChild);$i++)
+            graficUserPathologiesChild[i]=[];
+            @for($j=0;$j<count($graficUserPathologiesChild[$i]);$j++)
+                graficUserPathologiesChild[i][j]='{{$graficUserPathologiesChild[$i][$j]}}';
+                j++;
+            @endfor
+            j=0;
+            i++;
+        @endfor
+        console.log(graficUserPathologiesChild);
+        var graficUserPathologiesChild = c3.generate({
+            bindto: '#graficUserPathologiesChild',
+           
+            data: {
+                x : 'x',
+                columns: graficUserPathologiesChild,
+                type: 'bar'
+            },
+            
+            axis: {
+                x: {
+                    type: 'category', // this needed to load string x value
+                    label: {
+                        text: 'Patologias captadas en representantes',
+                        position: 'outer-center'
+                    }
+
+                },
+                y:{
+                    label: {
+                        text: 'Cantidad De representantes con patologias',
+                        position: 'outer-center'
+                    }
+                }
+                
+            }
+        });
+    </script>
 @stop

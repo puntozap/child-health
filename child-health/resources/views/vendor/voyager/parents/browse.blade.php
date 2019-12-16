@@ -247,16 +247,20 @@
                                             </td>
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
+                                            @if(\Auth::user()->role_id!=5)
                                             
                                             <a href="javascript:;" title="Borrar" class="btn btn-sm btn-danger pull-right delete" data-id="{{$data->id}}" id="delete-{{$data->id}}">
                                                         <i class="voyager-trash"></i> <span class="hidden-xs hidden-sm">Borrar</span>
                                                     </a>
+                                            @endif
                                             <a href="/admin/children/parents/{{$data->id}}/{{$id}}/edit" title="Editar" class="btn btn-sm btn-primary pull-right edit">
                                                         <i class="voyager-edit"></i> <span class="hidden-xs hidden-sm">Editar</span>
                                                     </a>
+                                            @if(\Auth::user()->role_id!=5)
                                             <a href="/admin/children/parents/{{$id}}/{{$data->id}}" title="Ver" class="btn btn-sm btn-warning pull-right view">
                                                         <i class="voyager-eye"></i> <span class="hidden-xs hidden-sm">Ver</span>
                                                     </a>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach

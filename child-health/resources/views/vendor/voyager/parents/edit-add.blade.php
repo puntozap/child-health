@@ -28,7 +28,7 @@
                     <!-- form start -->
                     <form role="form"
                             class="form-edit-add"
-                            action="{{ $edit ? '/admin/children/parents/'.$id : '/admin/children/parents/'.$id.'/store' }}"
+                            action="{{ $edit ? '/admin/children/parents/'.$child_id.'/'.$id.'/update' : '/admin/children/parents/'.$id.'/store' }}"
                             method="POST" enctype="multipart/form-data">
                         <!-- PUT Method if we are editing -->
                         @if($edit)
@@ -54,14 +54,15 @@
                             @php
                                 $dataTypeRows = $dataType->{($edit ? 'editRows' : 'addRows' )};
                             @endphp
+                            
                             <div class="col-md-12">
                                 <label for="">Cedula de Identidad</label>
-                                <input type="number" class="form-control" id="dni" value="{{isset($dataTypeContent->dni)?$dataTypeContent->dni:''}}">
+                                <input type="number" class="form-control" name="dni" id="dni" value="{{$edit==1?$dataTypeContent->dni:''}}">
                             </div>
                             @foreach($dataTypeRows as $row)
                             
                                 <!-- GET THE DISPLAY OPTIONS -->
-                                @if($row->id!=9&&$row->id!=10)
+                                @if($row->id!=9&&$row->id!=10&&$row->id!=4&&$row->id!=3)
                                     @php
                                         $display_options = $row->details->display ?? NULL;
                                         if ($dataTypeContent->{$row->field.'_'.($edit ? 'edit' : 'add')}) {
@@ -296,8 +297,25 @@
                 }
             });
         }
-        $("select[name='pathology_id']").attr("disabled","disabled");
         var band=0;
+        @if(!$edit)
+            if($("input[name='pathology']").is(':checked')){
+                band=1;
+                $("select[name='pathology_id']").removeAttr('disabled');
+            }else{
+                $("select[name='pathology_id']").attr("disabled","disabled");
+                band=0;
+            }
+        @else
+            if($("input[name='pathology']").is(':checked')){
+                band=1;
+                $("select[name='pathology_id']").removeAttr('disabled');
+            }else{
+                $("select[name='pathology_id']").attr("disabled","disabled");
+                band=0;
+                
+            }
+        @endif
         $("input[name='pathology']").change(function(){
             if(band==0){
                 $("select[name='pathology_id']").removeAttr('disabled');

@@ -14,6 +14,8 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\Inventory;
+use App\User;
+use App\Visit;
 
 class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
 {
@@ -30,7 +32,24 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
     //      Browse our Data Type (B)READ
     //
     //****************************************
-
+    public function arrayRepeat($array,$data){
+        for($i=0;$i<count($array);$i++){
+            // dd($array);
+            if($array[$i]["date"]==$data){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    public function checkDate($array,$data){
+        for($i=0;$i<count($array);$i++){
+            // dd($array);
+            if($array[$i]["date"]==$data){
+                return $i;
+            }
+        }
+        return -1;
+    }
     public function index(Request $request)
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
@@ -42,6 +61,10 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
 
         // Check permission
         //
+        if(\Auth::user()==null  ){
+            return redirect("/admin");
+        }
+        //////QUANTITY OF FORMULAS DELIVERED
         $InventoryTotalReceivedAndDelivered=Inventory::select(DB::raw("sum(quantity_receive+quantity_delivered) as quantity_total"),DB::raw("sum(quantity_receive) as quantity_receive"),DB::raw("sum(quantity_delivered) as quantity_delivered"),
         "formulas.name as formula_name",
         "formulas.id as formula_id",
@@ -58,7 +81,145 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
             array_push($graphicInventoryTotalReceivedAndDelivered[3],$inventory->formula_name." ".$inventory->date);
             // dd($graphicInventoryTotalReceivedAndDelivered);
         }
+        ///////CANTIDAD DE NINOS REGISTRADOS
+        $User=User::select(DB::raw("count(sex) as quantity_sex"),"sex")
+        ->where("role_id",6)
+        ->groupBy("sex")
+        ->orderBy("sex","asc")
+        ->get();
+        // dd($User);
+        $graphicChild=[["Niño"],["Niña"]];
+        foreach($User as $child){
+            if($child->sex==0)
+            array_push($graphicChild[0],$child->quantity_sex);
+            else
+            array_push($graphicChild[1],$child->quantity_sex);
+            
+        }
+        $Visit=Visit::select(DB::raw("count(child_user_id) as quantity_child"),"users.sex",
+        DB::raw("DATE_FORMAT(date_visit,'%m-%Y') as date"),"child_user_id")
+        ->join("users","users.id","=","visits.child_user_id")
+        ->groupBy("users.sex","date_visit","child_user_id")
+        ->orderBy("users.sex","asc")
+        ->get();
+        // dd($Visit);
+        $graphicVisit=[["Niño"],["Niña"],['x']];
+        $dateRepeat=[];
+        $dataConfigVisits=[];
+        $i=0;
+        foreach($Visit as $visit){
+            // $dateRepeat[$i];
+           
+                $response=$this->arrayRepeat($dateRepeat,$visit->date);
+                if($response==0){
+                    $dataConfigVisits["date"]=$visit->date;
+                    $dataConfigVisits["quantity_male"]=0;
+                    $dataConfigVisits["quantity_female"]=0;
+                    array_push($dateRepeat,$dataConfigVisits);
+                }
+        }
+        foreach($Visit as $visit){
+            $response=$this->checkDate($dateRepeat,$visit->date);
+            if($response!=-1){
+                if($visit->sex==0){
+                    $dateRepeat[$response]["quantity_female"]=$dateRepeat[$response]["quantity_female"]+$visit->quantity_child;
+                }else{
+                    $dateRepeat[$response]["quantity_male"]=$dateRepeat[$response]["quantity_male"]+$visit->quantity_child;
+                }
+            }
+        }
+        $dateVerified="";
+        $i=0;
+        // dd(($dateRepeat));
+            for($i=0;$i<count($dateRepeat);$i++){
+                array_push($graphicVisit[0],$dateRepeat[$i]['quantity_male']);  
+                array_push($graphicVisit[1],$dateRepeat[$i]['quantity_female']);    
+                array_push($graphicVisit[2],"Ninos y Ninas ".$dateRepeat[$i]['date']);    
+            }
+        $UserPatologies=User::select(DB::raw("count(pathology_id) as quantity_pathology"),
+        "pathologies.name as pathologies_name"
+        )
+        ->where("role_id",6)
+        ->join("pathologies","pathologies.id","=","users.pathology_id")
+        ->groupBy("pathologies.name")
+        ->get();
+        $graphicUserPathologies=array();
+        $data=[];
+        $i=0;
+        foreach($UserPatologies as $pathologies){
+            $graphicUserPathologies[$i]=array();
+            $data["name"]=$pathologies->pathologies_name;
+            $data['pathology']=$pathologies->quantity_pathology;
+            array_push($graphicUserPathologies[$i],$data["name"]);
+            array_push($graphicUserPathologies[$i],$data["pathology"]);
+            $i++;
+        }
+        $UserPatologiesParents=User::select(DB::raw("count(pathology_id) as quantity_pathology"),
+        "pathologies.name as pathologies_name"
+        )
+        ->where("role_id",3)
+        ->orWhere("role_id",4)
+        ->join("pathologies","pathologies.id","=","users.pathology_id")
+        ->groupBy("pathologies.name")
+        ->get();
+        // dd($UserPatologiesParents);
+        $graphicUserPatologiesParents=array();
+        $data=[];
+        $i=0;
+        foreach($UserPatologiesParents as $pathologies){
+            $graphicUserPatologiesParents[$i]=array();
+            $data["name"]=$pathologies->pathologies_name;
+            $data['pathology']=$pathologies->quantity_pathology;
+            array_push($graphicUserPatologiesParents[$i],$data["name"]);
+            array_push($graphicUserPatologiesParents[$i],$data["pathology"]);
+            $i++;
+        }
+        // dd($graphicUserPathologies);
         // dd($graphicInventoryTotalReceivedAndDelivered);
+        $UserPathologiesChild=User::
+        select(DB::raw("count(pathology_id) as quantity_pathologies"),
+        "countries.name as country_name",
+        "states.name as state_name",
+        "pathologies.name as pathology_name"
+        )
+        ->join("countries","countries.id","=","users.country_id")
+        ->join("states","states.id","=","users.state_id")
+        ->join("pathologies","pathologies.id","=","users.pathology_id")
+        ->groupBy("countries.name","states.name","pathologies.name")
+        ->where("role_id",6)
+        ->get();
+        // dd($UserPathologiesChild);
+        $graficUserPathologiesChild=[];
+        $data=[];
+        $i=0;
+        foreach($UserPathologiesChild as $userChild){
+            $graficUserPathologiesChild[$i]=array();
+            array_push($graficUserPathologiesChildCountry[$i],$userChild->pathology_name);
+            array_push($graficUserPathologiesChildCountry[$i],$userChild->quantity_pathologies);
+            $i++;
+
+        }
+        $pos=$i;
+        $graficUserPathologiesChildCountry[$pos]=array();
+        $ban=0;
+        array_push($graficUserPathologiesChildCountry[$pos],"x");
+        foreach($UserPathologiesChild as $userChild){
+            for($j=0;$j<count($graficUserPathologiesChildCountry[$pos]);$j++){
+                if($graficUserPathologiesChildCountry[$pos][$j]==$userChild->country_name." ".$userChild->state_name){
+                    $ban=1;
+                    break;
+                }
+                // if($graficUserPathologiesChild[$pos]){
+
+                // }
+            }
+            if($ban==0){
+            array_push($graficUserPathologiesChild[$pos],$userChild->country_name." ".$userChild->state_name);
+            }
+            
+        }
+
+        // dd($graficUserPathologiesChild);
         $view = 'voyager::bread.browse';
 
         if (view()->exists("voyager::$slug.browse")) {
@@ -68,7 +229,12 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
         return Voyager::view($view, compact(
             'view',
             'InventoryTotalReceivedAndDelivered',
-            'graphicInventoryTotalReceivedAndDelivered'
+            'graphicInventoryTotalReceivedAndDelivered',
+            'graphicChild',
+            'graphicVisit',
+            'graphicUserPathologies',
+            'graphicUserPatologiesParents',
+            "graficUserPathologiesChild"
             
             
         ));
