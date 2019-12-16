@@ -189,15 +189,17 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
         ->where("role_id",6)
         ->get();
         // dd($UserPathologiesChild);
-        $graficUserPathologiesChild=[];
+        $graficUserPathologiesChildCountry=[];
         $data=[];
         $i=0;
         foreach($UserPathologiesChild as $userChild){
-            $graficUserPathologiesChild[$i]=array();
+            $graficUserPathologiesChildCountry[$i]=array();
+            // dd($graficUserPathologiesChild);
             array_push($graficUserPathologiesChildCountry[$i],$userChild->pathology_name);
             array_push($graficUserPathologiesChildCountry[$i],$userChild->quantity_pathologies);
-            $i++;
+            // dd($graficUserPathologiesChildCountry);
 
+            $i++;
         }
         $pos=$i;
         $graficUserPathologiesChildCountry[$pos]=array();
@@ -214,7 +216,7 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
                 // }
             }
             if($ban==0){
-            array_push($graficUserPathologiesChild[$pos],$userChild->country_name." ".$userChild->state_name);
+            array_push($graficUserPathologiesChildCountry[$pos],$userChild->country_name." ".$userChild->state_name);
             }
             
         }
@@ -234,8 +236,7 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
             'graphicVisit',
             'graphicUserPathologies',
             'graphicUserPatologiesParents',
-            "graficUserPathologiesChild"
-            
+            "graficUserPathologiesChildCountry"
             
         ));
     }

@@ -42,7 +42,7 @@
                             </div>
                             <div class="col-md-6 text-center">
                                 <label for="">Cantidad de representantes con patologias</label>
-                                <div id="graficUserPathologiesChild"></div>
+                                <div id="graficUserPathologiesChildCountry"></div>
                             </div>
                         </div>  
                     </div>
@@ -287,25 +287,25 @@
 
 
 <script>
-        var graficUserPathologiesChild=[];
+        var graficUserPathologiesChildCountry=[];
         i=0;
         j=0;
-        @for($i=0;$i<count($graficUserPathologiesChild);$i++)
-            graficUserPathologiesChild[i]=[];
-            @for($j=0;$j<count($graficUserPathologiesChild[$i]);$j++)
-                graficUserPathologiesChild[i][j]='{{$graficUserPathologiesChild[$i][$j]}}';
+        @for($i=0;$i<count($graficUserPathologiesChildCountry);$i++)
+            graficUserPathologiesChildCountry[i]=[];
+            @for($j=0;$j<count($graficUserPathologiesChildCountry[$i]);$j++)
+                graficUserPathologiesChildCountry[i][j]='{{$graficUserPathologiesChildCountry[$i][$j]}}';
                 j++;
             @endfor
             j=0;
             i++;
         @endfor
-        console.log(graficUserPathologiesChild);
-        var graficUserPathologiesChild = c3.generate({
-            bindto: '#graficUserPathologiesChild',
+        console.log(graficUserPathologiesChildCountry);
+        var graficUserPathologiesChildCountry = c3.generate({
+            bindto: '#graficUserPathologiesChildCountry',
            
             data: {
                 x : 'x',
-                columns: graficUserPathologiesChild,
+                columns: graficUserPathologiesChildCountry,
                 type: 'bar'
             },
             
