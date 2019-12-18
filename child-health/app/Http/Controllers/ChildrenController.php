@@ -14,6 +14,7 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\User;
+use App\Visit;
 use App\Country;
 use App\State;
 use App\Municipality;
@@ -33,6 +34,108 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //      Browse our Data Type (B)READ
     //
     //****************************************
+    public function verifyChild($array,$child_id,$name,$date){
+        for($i=0;$i<count($array);$i++){
+            if($array[$i]["id"]==$child_id){
+                if($array[$i]["name"]==$name){
+                    if($array[$i]["date"]==$date){
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    public function checked($array,$child_id,$name,$date){
+        
+        
+            if($array["id"]==$child_id){
+                // print($array["id"]==$child_id);
+                if($array["name"]==$name){
+                    // print($array["name"]==$name);
+                    if($array["date"]==$date){
+                        // dd($i);
+                        return 1;
+                    }
+                }
+            }
+        return 0;
+    }
+    public function reportVisits(){
+        $view = 'voyager::children.reportes';
+        $Visit=DB::select(
+        "SELECT DATE_FORMAT(visits.date_visit,'%m-%y') as date_visits, users.id, users.name
+        from visits
+        join users on users.id=visits.child_user_id
+        where role_id=6
+        
+        order by visits.date_visit desc"
+        );
+        $arrayChild=[];
+        $data=[];
+        foreach($Visit as $visit){
+            $response=$this->verifyChild($arrayChild,$visit->id,$visit->name,$visit->date_visits);
+            if($response==0){
+                $data["id"]=$visit->id;
+                $data["name"]=$visit->name;
+                $data["date"]=$visit->date_visits;
+                $data["total"]=0;
+                array_push($arrayChild,$data);
+            }
+            // print($response." ");
+        }
+        // dd($arrayChild);
+        for($i=0;$i<count($arrayChild);$i++){
+            foreach($Visit as $visit){
+                $response=$this->checked($arrayChild[$i],$visit->id,$visit->name,$visit->date_visits);
+                if($response==1){
+                    // print($arrayChild[$response]["total"]. " ");
+                    $arrayChild[$i]["total"]=$arrayChild[$i]["total"]+1;
+                }
+            }
+        }
+        // dd("hola",$arrayChild);
+        return Voyager::view($view, compact('view',"arrayChild"));
+    }
+    public function reportVisitsDate(Request $request){
+        // dd($request);
+        $date_start=$request['date_start'];
+        $date_finish=$request['date_finish'];
+        $view = 'voyager::children.reportes';
+        $Visit=DB::select(
+        "SELECT DATE_FORMAT(visits.date_visit,'%m-%y') as date_visits, users.id, users.name
+        from visits
+        join users on users.id=visits.child_user_id
+        where role_id=6
+        and visits.date_visit between '".$request['date_start']."' and '".$request['date_finish']."'
+        order by visits.date_visit desc"
+        );
+        $arrayChild=[];
+        $data=[];
+        foreach($Visit as $visit){
+            $response=$this->verifyChild($arrayChild,$visit->id,$visit->name,$visit->date_visits);
+            if($response==0){
+                $data["id"]=$visit->id;
+                $data["name"]=$visit->name;
+                $data["date"]=$visit->date_visits;
+                $data["total"]=0;
+                array_push($arrayChild,$data);
+            }
+            // print($response." ");
+        }
+        // dd($arrayChild);
+        for($i=0;$i<count($arrayChild);$i++){
+            foreach($Visit as $visit){
+                $response=$this->checked($arrayChild[$i],$visit->id,$visit->name,$visit->date_visits);
+                if($response==1){
+                    // print($arrayChild[$response]["total"]. " ");
+                    $arrayChild[$i]["total"]=$arrayChild[$i]["total"]+1;
+                }
+            }
+        }
+        // dd("hola",$arrayChild);
+        return Voyager::view($view, compact('view',"arrayChild","date_start","date_finish"));
+    }
 
     public function index(Request $request)
     {
@@ -121,6 +224,8 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             $dataTypeContent->load('translations');
         }
         $dataTypeContent=User::where("role_id",6)->get();
+        $Parents=User::where("role_id",3)->orWhere("role_id",4)->get();
+        // dd($parents);
         // dd($dataTypeContent);
         // Check if server side pagination is enabled
         $isServerSide = isset($dataType->server_side) && $dataType->server_side;
@@ -147,7 +252,8 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
             'isServerSide',
             'defaultSearchKey',
             'usesSoftDeletes',
-            'showSoftDeleted'
+            'showSoftDeleted',
+            'Parents'
         ));
     }
 

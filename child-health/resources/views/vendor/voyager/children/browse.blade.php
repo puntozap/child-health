@@ -45,7 +45,9 @@
 
 @section('content')
     <div class="page-content browse container-fluid">
-        
+        @php 
+            $i=0;
+        @endphp
         @include('voyager::alerts')
         <div class="row">
             <div class="col-md-12">
@@ -106,6 +108,7 @@
                                             @endif
                                         </th>
                                         @endforeach
+                                        <th>Representante</th>
                                         <th class="actions text-right">{{ __('voyager::generic.actions') }}</th>
                                     </tr>
                                 </thead>
@@ -250,6 +253,15 @@
                                                     <span>{{ $data->{$row->field} }}</span>
                                                 @endif
                                             </td>
+                                        @endforeach
+                                        @php 
+                                            $i++;
+                                        @endphp
+                                        @foreach($Parents as $parents)
+                                        @if($parents->user_son_id==$data->id)
+                                        <td>{{$parents->name}} {{$parents->last_name}}</td>
+                                        @php break; @endphp
+                                        @endif
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
                                                 <div class="dropdown ">
