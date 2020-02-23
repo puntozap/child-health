@@ -11,6 +11,9 @@
 |
 */
 
+Route::get('/excel', function () {
+    return Excel::download(new VisitsPerMonth, 'products.xlsx');
+});
 Route::get('/', function () {
     return redirect("admin");
 });
@@ -18,7 +21,12 @@ Route::get('/', function () {
 
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
+    
     Route::get('grafica', 'GraficasController@index');
+    Route::get('state', 'ChildrenController@state');
+    Route::get('municipality', 'ChildrenController@municipality');
+    Route::get('parish', 'ChildrenController@parish');
+    Route::post('generals/results', 'ChildrenController@searchResult');
     Route::resource('children','ChildrenController');
     Route::get('{country_id}/searchStateCountry', 'ChildrenController@searchStateCountry');
     Route::get('{state_id}/searchMunicipalityState', 'ChildrenController@searchMunicipalityState');
@@ -43,8 +51,16 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('/formulas/inventories/{id}/{formula_id}/edit',"InventoriesController@edit");
     Route::put('/formulas/inventories/{id}/{formula_id}/update',"InventoriesController@update");
     Route::resource('/reportes',"ReportsController");
+    Route::post('reporte/reportVisitsDate',"ReportsController@reportVisitsDate");
+    Route::post('reporte/searchResult',"ReportsController@searchResult");
     Route::get('reporte/visitas',"ChildrenController@reportVisits");
+    Route::get('reporte/general',"ChildrenController@GeneralReport");
+    Route::get('reporte/entrega-formulas',"ChildrenController@ReportFormulaDelivery");
     Route::post('search/visitas-fechas',"ChildrenController@reportVisitsDate");
+    Route::post('search/visitas-delivered',"ReportsController@reportVisitsDelivered");
+    Route::get('excel/visitas',"ReportsController@ExcelVisited");
+    Route::get('excel/general',"ReportsController@ExcelGeneral");
+    Route::get('excel/entregas',"ReportsController@ExcelDelivery");
     // Route::delete('children/visits/{parent_id}/{id}/destroy',"VisitsController@destroy");
     // Route::resource("parents",'ParentsController');
 });

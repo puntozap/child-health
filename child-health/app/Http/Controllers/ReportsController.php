@@ -14,8 +14,15 @@ use TCG\Voyager\Events\BreadImagesDeleted;
 use TCG\Voyager\Facades\Voyager;
 use TCG\Voyager\Http\Controllers\Traits\BreadRelationshipParser;
 use App\Inventory;
+use App\Sponsor;
+use App\Formula;
 use App\User;
 use App\Visit;
+use App\Country;
+use App\Exports\VisitsPerMonth;
+use App\Exports\General;
+use App\Exports\DeliveredFormula;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
 {
@@ -32,6 +39,21 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
     //      Browse our Data Type (B)READ
     //
     //****************************************
+    public function ExcelDelivery(Request $request){
+        // dd($request);
+        return Excel::download(new DeliveredFormula($request), 'reporte-entregas.xlsx');
+        
+    }
+    public function ExcelVisited(Request $request){
+        // dd($request);
+        return Excel::download(new VisitsPerMonth($request), 'reporte-visitas.xlsx');
+        
+    }
+    public function ExcelGeneral(Request $request){
+        // dd($request);
+        return Excel::download(new General($request), 'reporte-general.xlsx');
+        
+    }
     public function arrayRepeat($array,$data){
         for($i=0;$i<count($array);$i++){
             // dd($array);
@@ -50,7 +72,383 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
         }
         return -1;
     }
-    public function index(Request $request)
+    public function reportVisits(){
+        $view = 'voyager::children.reportes';
+        $Visit=DB::select(
+        "SELECT DATE_FORMAT(visits.date_visit,'%m-%y') as date_visits, users.id, users.name
+        from visits
+        join users on users.id=visits.child_user_id
+        where role_id=6
+        
+        order by visits.date_visit desc"
+        );
+        $arrayChild=[];
+        $data=[];
+        foreach($Visit as $visit){
+            $response=$this->verifyChild($arrayChild,$visit->id,$visit->name,$visit->date_visits);
+            if($response==0){
+                $data["id"]=$visit->id;
+                $data["name"]=$visit->name;
+                $data["date"]=$visit->date_visits;
+                $data["total"]=0;
+                array_push($arrayChild,$data);
+            }
+            // print($response." ");
+        }
+        // dd($arrayChild);
+        for($i=0;$i<count($arrayChild);$i++){
+            foreach($Visit as $visit){
+                $response=$this->checked($arrayChild[$i],$visit->id,$visit->name,$visit->date_visits);
+                if($response==1){
+                    // print($arrayChild[$response]["total"]. " ");
+                    $arrayChild[$i]["total"]=$arrayChild[$i]["total"]+1;
+                }
+            }
+        }
+        return $arrayChild;
+        // dd("hola",$arrayChild);
+        // return Voyager::view($view, compact('view',"arrayChild"));
+    }
+    public function reportVisitsDate(Request $request){
+        // dd($request);
+        $date_start=$request['date_start'];
+        $date_finish=$request['date_finish'];
+        $view = 'voyager::children.reportes';
+        $Visit=DB::select(
+        "SELECT DATE_FORMAT(visits.date_visit,'%m-%y') as date_visits, users.id, users.name
+        from visits
+        join users on users.id=visits.child_user_id
+        where role_id=6
+        and visits.date_visit between '".$request['date_start']."' and '".$request['date_finish']."'
+        order by visits.date_visit desc"
+        );
+        $arrayChild=[];
+        $data=[];
+        foreach($Visit as $visit){
+            $response=$this->verifyChild($arrayChild,$visit->id,$visit->name,$visit->date_visits);
+            if($response==0){
+                $data["id"]=$visit->id;
+                $data["name"]=$visit->name;
+                $data["date"]=$visit->date_visits;
+                $data["total"]=0;
+                array_push($arrayChild,$data);
+            }
+            // print($response." ");
+        }
+        // dd($arrayChild);
+        for($i=0;$i<count($arrayChild);$i++){
+            foreach($Visit as $visit){
+                $response=$this->checked($arrayChild[$i],$visit->id,$visit->name,$visit->date_visits);
+                if($response==1){
+                    // print($arrayChild[$response]["total"]. " ");
+                    $arrayChild[$i]["total"]=$arrayChild[$i]["total"]+1;
+                }
+            }
+        }
+        return response()->json($arrayChild);
+        // dd("hola",$arrayChild);
+        // return Voyager::view($view, compact('view',"arrayChild","date_start","date_finish"));
+    }
+    public function country_id(){
+        if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
+        {
+            $ip=$_SERVER['HTTP_CLIENT_IP'];
+        }
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
+        {
+            $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+        else
+        {
+            $ip=$_SERVER['REMOTE_ADDR'];
+        }
+        //dd($ip);
+        //  $ip="181.16.232.24";//190.36.180.179
+        $ip="201.208.143.109";//190.36.180.179 Search Results
+        
+        if($ip!="127.0.0.1"){
+        $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}"));}
+        // dd($details);
+        $country_id=$details->country;
+
+        return $details;
+    }
+    public function reportVisitsDelivered(Request $request){
+        // dd($request);
+        $delivered=Visit::select("users.name",DB::raw("count(users.name) as delivered"))
+        ->join("users","users.id","=","visits.child_user_id")
+        ->groupBy("users.name")
+        ->orderBy(DB::raw("count(users.name)"),"desc")
+        ->whereBetween("visits.date_visit",[$request['date_start'],$request['date_end']])->get();
+        return response()->json($delivered);
+    }
+    public function index(){
+        if(\Auth::id()==null)
+            return redirect("/admin");
+        $arrayVisit=$this->reportVisits();
+        $arrayGeneral=$this->GeneralReport();
+        $delivered=$this->quantity_formulas_delivered();
+        $Child=$this->quantityChildren();
+        $TotalVisit=$this->quantityVisit();
+        $totalInventory=$this->quantityInventory();
+        $quantitySponsor=$this->quantitySponsor();
+        // dd($Child);
+        // $country_id=$this->country_id();
+        $country_id='VE';
+        $Country=Country::get();
+        $Visit=Visit::get();
+
+        // dd($arrayVisit);
+        $view = 'vendor.voyager.reportes.dashboard';
+        return Voyager::view($view, compact(
+            'view',
+            'arrayVisit',
+            'arrayGeneral',
+            'totalInventory',
+            'Country',
+            'country_id',
+            'Visit',
+            'delivered',
+            'Child',
+            'TotalVisit',
+            "quantitySponsor"
+        ));
+
+    }
+    public function quantityChildren(){
+        $child=User::select(DB::raw("count(name) as totalChild"))->where("role_id",6)->first();
+        return $child;
+    }
+    public function quantityVisit(){
+        $Visit=Visit::select(DB::raw("count(visits.id) as totalVisit"))
+        ->join("users","users.id","=","visits.child_user_id")
+        ->first();
+        return $Visit;
+    }
+    public function searchResult(Request $request){
+        if(\Auth::id()==null)
+            return redirect("/admin");
+            // dd($request);
+        $Report=User::select(
+            "users.id as user_id",
+            "users.name as user_name",
+            "users.last_name as user_last_name",
+            "users.date_birth as user_date_birth",
+            "users.user_son_id",
+            "users.role_id as user_role_id",
+            "users.phone as user_phone",
+
+            "parents.id as parent_id",
+            "parents.name as parent_name",
+            "parents.last_name as parent_last_name",
+            "parents.date_birth as parent_date_birth",
+            "parents.user_son_id as parents_user_son_id",
+            "parents.role_id as parent_role_id",
+            "parents.dni as parent_dni",
+
+            "country.name as country_name",
+            "state.name as state_name",
+            "municipio.name as municipio_name",
+            "parishes.name as parishes_name",
+            "users.address as domicilio",
+
+            "country.id as country_id",
+            "state.id as state_id",
+            "municipio.id as municipio_id",
+            "parishes.id as parishes_id",
+            DB::raw("DATEDIFF(CURDATE(),parents.date_birth) as years_parent"),
+            DB::raw("DATEDIFF(CURDATE(),users.date_birth) as child_days")
+
+        )
+        ->join("users as parents","parents.user_son_id","=","users.id")
+        ->join("countries as country","country.id","=","users.country_id")
+        ->join("states as state","state.id","=","users.state_id")
+        ->join("municipalities as municipio","municipio.id","=","users.municipality_id")
+        ->join("parishes as parishes","parishes.id","=","users.parish_id")
+        ->orderBy("user_id");
+        $date_end="";
+        $date_start="";
+        $aux="";
+        // dd($request['date_finish']==null);
+        if($request['date_startx']!=null){
+        if(isset($request['date_startx'])){
+            if(isset($request['date_finishx'])){
+                if($request['date_startx']==null){
+                    if($request['date_finishx']==null){
+                        $Report=$Report->get(); 
+                    }else{
+                        $Report=$Report->get(); 
+                    }
+                }else{
+                    if($request['date_finishx']==null){
+                        $Report=$Report->get(); 
+                    }else{
+                        if($request['date_finishx']<$request['date_startx']){
+                            $aux=$request['date_finishx'];
+                            $date_end=$request['date_startx'];
+                            $date_start=$aux;
+                        }else{
+                            $date_start=$request['date_startx'];
+                            $date_end=$request['date_finishx'];
+                        }        
+                        $Report=$Report->whereBetween("users.date_birth",[$date_start,$date_end]);
+                        if($request['country_id']!=null&&$request['country_id']!="Seleccione"){
+                            $Report=$Report->where('users.country_id',$request['country_id']);
+                        }
+                            if($request['state_id']!=null&&$request['state_id']!="Seleccione"){
+                                $Report=$Report->where('users.state_id',$request['state_id']);
+            
+                            }
+                                if($request['municipality_id']!=null&&$request['municipality_id']!="Seleccione"){
+                                    $Report=$Report->where('users.municipality_id',$request['municipality_id']);
+                                }
+                                    if($request['parish_id']!=null&&$request['parish_id']!="Seleccione"){
+                                        $Report=$Report->where('users.parish_id',$request['parish_id']);
+                                    }
+                    }
+                }
+            }
+        }else{
+            $Report=$Report->get();
+        }
+        }else{
+            if($request['country_id']!=null&&$request['country_id']!="Seleccione"){
+                $Report=$Report->where('users.country_id',$request['country_id']);
+            }
+                if($request['state_id']!=null&&$request['state_id']!="Seleccione"){
+                    $Report=$Report->where('users.state_id',$request['state_id']);
+
+                }
+                    if($request['municipality_id']!=null&&$request['municipality_id']!="Seleccione"){
+                        $Report=$Report->where('users.municipality_id',$request['municipality_id']);
+                    }
+                        if($request['parish_id']!=null&&$request['parish_id']!="Seleccione"){
+                            $Report=$Report->where('users.parish_id',$request['parish_id']);
+                        }
+                    
+                
+        }
+        $Report=$Report->get();
+        // $arrayVisit=$this->reportVisits();
+        $Visit=Visit::get();
+
+        // dd($Report);
+        // $date_finish=$date_end;
+        // $country_id=$request['country_id'];
+        // $state_id=$request['state_id'];
+        // dd($state_id);
+        // $municipality_id=$request['municipality_id'];
+        // dd($municipality_id);
+        // $parish_id=$request['parish_id'];
+        // dd($parish_id);
+        // $Visit=Visit::get();
+        // $Country=Country::get();
+        $view = 'voyager::children.general';
+        $Re["Report"]=$Report;
+        $Re["arrayVisit"]=$Visit;
+        return response()->json($Re);
+        // return Voyager::view($view, compact('view',"Report",'Visit','Country','date_finish','date_start','country_id','state_id','municipality_id','parish_id'));
+        
+    }
+    public function GeneralReport(){
+        
+        
+        // dd($country_id);
+        $Report=User::select(
+            "users.id as user_id",
+            "users.name as user_name",
+            "users.last_name as user_last_name",
+            "users.date_birth as user_date_birth",
+            "users.user_son_id",
+            "users.role_id as user_role_id",
+            "users.phone as user_phone",
+
+            "parents.id as parent_id",
+            "parents.name as parent_name",
+            "parents.last_name as parent_last_name",
+            "parents.date_birth as parent_date_birth",
+            "parents.user_son_id as parents_user_son_id",
+            "parents.role_id as parent_role_id",
+            "parents.dni as parent_dni",
+
+            "country.name as country_name",
+            "state.name as state_name",
+            "municipio.name as municipio_name",
+            "parishes.name as parishes_name",
+            "users.address as domicilio",
+
+            DB::raw("DATEDIFF(CURDATE(),parents.date_birth) as years_parent"),
+            DB::raw("DATEDIFF(CURDATE(),users.date_birth) as child_days")
+
+        )
+        ->join("users as parents","parents.user_son_id","=","users.id")
+        ->join("countries as country","country.id","=","users.country_id")
+        ->join("states as state","state.id","=","users.state_id")
+        ->join("municipalities as municipio","municipio.id","=","users.municipality_id")
+        ->join("parishes as parishes","parishes.id","=","users.parish_id")
+        ->orderBy("user_id")
+        ->get();
+        // dd($Report);
+        // dd($details);
+        // dd($Visit);
+        // $dEnd = new DateTime(date("Y-m-d"));
+        // $dStart  = new DateTime($User->date_birth);
+        // $dDiff = $dStart->diff($dEnd);
+        // $days=$dDiff->format('%r%a');
+        // $view = 'voyager::children.general';
+        // return Voyager::view($view, compact('view',"Report",'Visit','Country','details'));
+        return $Report;
+    }
+    public function quantityInventory(){
+        $Inventory=Inventory::
+        select(DB::raw("sum(quantity_receive) as totalInventory"))
+        ->join("formulas","formulas.id","=","inventories.formula_id")
+        ->first();
+        return $Inventory;
+    }
+    public function quantitySponsor(){
+        $Sponsor=Sponsor::
+        select(DB::raw("count(id) as totalSponsor"))
+        ->first();
+        return $Sponsor;
+    }
+    public function quantity_formulas_delivered(){
+        $delivered=Visit::select("users.name",DB::raw("count(users.name) as delivered"))
+        ->join("users","users.id","=","visits.child_user_id")
+        ->groupBy("users.name")
+        ->orderBy(DB::raw("count(users.name)"),"desc")
+        ->get();
+        return $delivered;
+    }
+
+    public function verifyChild($array,$child_id,$name,$date){
+        for($i=0;$i<count($array);$i++){
+            if($array[$i]["id"]==$child_id){
+                if($array[$i]["name"]==$name){
+                    if($array[$i]["date"]==$date){
+                        return 1;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    public function checked($array,$child_id,$name,$date){
+        
+        
+            if($array["id"]==$child_id){
+                // print($array["id"]==$child_id);
+                if($array["name"]==$name){
+                    // print($array["name"]==$name);
+                    if($array["date"]==$date){
+                        // dd($i);
+                        return 1;
+                    }
+                }
+            }
+        return 0;
+    }
+    public function index_2(Request $request)
     {
         // GET THE SLUG, ex. 'posts', 'pages', etc.
         // $slug = $this->getSlug($request);

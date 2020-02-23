@@ -34,6 +34,229 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
     //      Browse our Data Type (B)READ
     //
     //****************************************
+    public function reportPerChild(){
+        
+    }
+    public function ReportFormulaDelivery(){
+        $Visit=Visit::join("users","users.id","=","visits.child_user_id")
+        ->join("countries","countries.id","=","users.country_id")
+        ->join("states","states.id","=","users.state_id")
+        ->join("municipalities","municipalities.id","=","users.municipality_id")
+        ->join("parishes","parishes.id","=","users.parish_id")
+        ->select(
+                "users.name as user_name",
+                "users.last_name as user_lastname",
+                DB::raw("count(visits.child_user_id) as quantity_visits"),
+                "countries.name as country_name",
+                "states.name as state_name",
+                "municipalities.name as municipality_name",
+                "parishes.name as parish_name",
+                "address",
+                "date_birth"
+            )
+        ->groupBy("visits.child_user_id","users.name","users.last_name","countries.name","states.name","municipalities.name","parishes.name","address","date_birth")
+        ->get();
+        $Country=Country::get();
+        // dd($Visit);
+        $view = 'voyager::children.quantity-formulas';
+        return Voyager::view($view, compact('view','Visit',"Country"));
+    }
+    public function state(Request $request){
+        $State=State::where("country_id",$request['country_id'])->get();
+        return response()->json($State);
+    }
+    public function municipality(Request $request){
+        $Municipality=Municipality::where("state_id",$request['state_id'])->get();
+        return response()->json($Municipality);
+    }
+    public function parish(Request $request){
+        $Parish=Parish::where("municipality_id",$request['municipality_id'])->get();
+        return response()->json($Parish);
+    }
+    public function searchResult(Request $request){
+        if(\Auth::id()==null)
+            return redirect("/admin");
+            // dd($request);
+        $Report=User::select(
+            "users.id as user_id",
+            "users.name as user_name",
+            "users.last_name as user_last_name",
+            "users.date_birth as user_date_birth",
+            "users.user_son_id",
+            "users.role_id as user_role_id",
+            "users.phone as user_phone",
+
+            "parents.id as parent_id",
+            "parents.name as parent_name",
+            "parents.last_name as parent_last_name",
+            "parents.date_birth as parent_date_birth",
+            "parents.user_son_id as parents_user_son_id",
+            "parents.role_id as parent_role_id",
+            "parents.dni as parent_dni",
+
+            "country.name as country_name",
+            "state.name as state_name",
+            "municipio.name as municipio_name",
+            "parishes.name as parishes_name",
+            "users.address as domicilio",
+
+            "country.id as country_id",
+            "state.id as state_id",
+            "municipio.id as municipio_id",
+            "parishes.id as parishes_id"
+
+        )
+        ->join("users as parents","parents.user_son_id","=","users.id")
+        ->join("countries as country","country.id","=","users.country_id")
+        ->join("states as state","state.id","=","users.state_id")
+        ->join("municipalities as municipio","municipio.id","=","users.municipality_id")
+        ->join("parishes as parishes","parishes.id","=","users.parish_id");
+        $date_end="";
+        $date_start="";
+        $aux="";
+        // dd($request['date_finish']==null==null);
+        if($request['date_start']!=null){
+        if(isset($request['date_start'])){
+            if(isset($request['date_finish'])){
+                if($request['date_start']==null){
+                    if($request['date_finish']==null){
+                        $Report=$Report->get(); 
+                    }else{
+                        $Report=$Report->get(); 
+                    }
+                }else{
+                    if($request['date_finish']==null){
+                        $Report=$Report->get(); 
+                    }else{
+                        if($request['date_finish']<$request['date_start']){
+                            $aux=$request['date_finish'];
+                            $date_end=$request['date_start'];
+                            $date_start=$aux;
+                        }else{
+                            $date_start=$request['date_start'];
+                            $date_end=$request['date_finish'];
+                        }        
+                        $Report=$Report->whereBetween("users.date_birth",[$date_start,$date_end]);
+                        if($request['country_id']!=null&&$request['country_id']!="Seleccione"){
+                            $Report=$Report->where('users.country_id',$request['country_id']);
+                        }else{
+                            if($request['state_id']!=null&&$request['state_id']!="Seleccione"){
+                                $Report=$Report->where('users.state_id',$request['state_id']);
+            
+                            }else{
+                                if($request['municipality_id']!=null&&$request['municipality_id']!="Seleccione"){
+                                    $Report=$Report->where('users.municipality_id',$request['municipality_id']);
+                                }else{
+                                    if($request['parish_id']!=null&&$request['parish_id']!="Seleccione"){
+                                        $Report=$Report->where('users.parish_id',$request['parish_id']);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            $Report=$Report->get();
+        }
+        }else{
+            if($request['country_id']!=null&&$request['country_id']!="Seleccione"){
+                $Report=$Report->where('users.country_id',$request['country_id']);
+            }
+                if($request['state_id']!=null&&$request['state_id']!="Seleccione"){
+                    $Report=$Report->where('users.state_id',$request['state_id']);
+
+                }
+                    if($request['municipality_id']!=null&&$request['municipality_id']!="Seleccione"){
+                        $Report=$Report->where('users.municipality_id',$request['municipality_id']);
+                    }
+                        if($request['parish_id']!=null&&$request['parish_id']!="Seleccione"){
+                            $Report=$Report->where('users.parish_id',$request['parish_id']);
+                        }
+                    
+                
+        }
+        $Report=$Report->get();
+        // dd($Report);
+        $date_finish=$date_end;
+        $country_id=$request['country_id'];
+        $state_id=$request['state_id'];
+        // dd($state_id);
+        $municipality_id=$request['municipality_id'];
+        // dd($municipality_id);
+        $parish_id=$request['parish_id'];
+        // dd($parish_id);
+        $Visit=Visit::get();
+        $Country=Country::get();
+        $view = 'voyager::children.general';
+        return Voyager::view($view, compact('view',"Report",'Visit','Country','date_finish','date_start','country_id','state_id','municipality_id','parish_id'));
+        
+    }
+    public function GeneralReport(){
+        if(\Auth::id()==null)
+            return redirect("/admin");
+        if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet
+        {
+            $ip=$_SERVER['HTTP_CLIENT_IP'];
+        }
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))   //to check ip is pass from proxy
+        {
+            $ip=$_SERVER['HTTP_X_FORWARDED_FOR'];
+        }
+        else
+        {
+            $ip=$_SERVER['REMOTE_ADDR'];
+        }
+        //dd($ip);
+        //  $ip="181.16.232.24";//190.36.180.179
+        $ip="201.208.143.109";//190.36.180.179 Search Results
+        
+        if($ip!="127.0.0.1"){
+        $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}"));}
+        // dd($details);
+        $country_id=$details->country;
+        // dd($country_id);
+        $Report=User::select(
+            "users.id as user_id",
+            "users.name as user_name",
+            "users.last_name as user_last_name",
+            "users.date_birth as user_date_birth",
+            "users.user_son_id",
+            "users.role_id as user_role_id",
+            "users.phone as user_phone",
+
+            "parents.id as parent_id",
+            "parents.name as parent_name",
+            "parents.last_name as parent_last_name",
+            "parents.date_birth as parent_date_birth",
+            "parents.user_son_id as parents_user_son_id",
+            "parents.role_id as parent_role_id",
+            "parents.dni as parent_dni",
+
+            "country.name as country_name",
+            "state.name as state_name",
+            "municipio.name as municipio_name",
+            "parishes.name as parishes_name",
+            "users.address as domicilio"
+
+        )
+        ->join("users as parents","parents.user_son_id","=","users.id")
+        ->join("countries as country","country.id","=","users.country_id")
+        ->join("states as state","state.id","=","users.state_id")
+        ->join("municipalities as municipio","municipio.id","=","users.municipality_id")
+        ->join("parishes as parishes","parishes.id","=","users.parish_id")
+        ->get();
+        $Visit=Visit::get();
+        $Country=Country::get();
+        // dd($details);
+        // dd($Visit);
+        // $dEnd = new DateTime(date("Y-m-d"));
+        // $dStart  = new DateTime($User->date_birth);
+        // $dDiff = $dStart->diff($dEnd);
+        // $days=$dDiff->format('%r%a');
+        $view = 'voyager::children.general';
+        return Voyager::view($view, compact('view',"Report",'Visit','Country','details'));
+    }
     public function verifyChild($array,$child_id,$name,$date){
         for($i=0;$i<count($array);$i++){
             if($array[$i]["id"]==$child_id){
