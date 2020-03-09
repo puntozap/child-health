@@ -158,13 +158,8 @@ class General implements FromCollection
                 $auxArray["age_parents"]=round($array->years_parent/365);
                 $auxArray["name_baby"]=$array->user_name." ".$array->user_last_name;       
                 $auxArray["birth_baby"]=$array->user_date_birth;
-                foreach($Visit as $visit){
-                    if($visit->child_user_id==$array->user_id){
-                        $auxArray["height"]=$visit->length;
-                        $auxArray["weigth"]=$visit->weight;
-                        break;
-                    }
-                }
+                $auxArray["height"]=$array->length;
+                $auxArray["weigth"]=$array->weight;
                 $auxArray["age_baby"]=$array->child_days;
                 $auxArray["country"]=$array->country_name;
                 $auxArray["state"]=$array->state_name;
