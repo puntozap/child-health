@@ -366,6 +366,7 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
 
         // dd("index");
         // $slug = $this->getSlug($request);
+        
         $slug='users';
         // GET THE DataType based on the slug
         $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
@@ -727,12 +728,13 @@ class ChildrenController extends \TCG\Voyager\Http\Controllers\Controller
         $User->municipality_id=$request['municipality_id'];
         $User->parish_id=$request['parish_id'];
         $User->address=$request['address'];
+        $User->length=$request['length'];
+        $User->weight=$request['weight'];
         $User->role_id=6;
         $User->save();
         event(new BreadDataAdded($dataType, $data));
 
-        return redirect()
-        ->route("children.index")
+        return redirect("/admin/children/parents/".$User->id."/create")
         ->with([
                 'message'    => __('voyager::generic.successfully_added_new')." probando",
                 'alert-type' => 'success',

@@ -104,13 +104,10 @@
             {{round($days)}}</td>
             <td>{{$data->user_name." ".$data->user_last_name}}</td>
             <td>{{$data->user_date_birth}}</td>
-            @foreach($Visit as $visit)
-            @if($visit->child_user_id==$data->user_id)
-            <td>{{$visit->length}}</td>
-            <td>{{$visit->weight}}</td>
-            @php break; @endphp
-            @endif
-            @endforeach
+            
+            <td>{{$data->user_length}}</td>
+            <td>{{$data->user_weight}}</td>
+            
             <td>
             @php 
                 $days=$data->child_days;

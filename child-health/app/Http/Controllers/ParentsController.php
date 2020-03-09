@@ -401,7 +401,7 @@ class ParentsController extends \TCG\Voyager\Http\Controllers\Controller
         $User->save();
         event(new BreadDataAdded($dataType, $data));
 
-        return redirect("/admin/children/parents/".$request['user_son_id'])
+        return redirect("/admin/children/visits/".$request['user_son_id']."/create")
         ->with([
                 'message'    => __('voyager::generic.successfully_added_new')." probando",
                 'alert-type' => 'success',

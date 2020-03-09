@@ -256,13 +256,18 @@
                                         @endforeach
                                         @php 
                                             $i++;
+                                            $band=0;
                                         @endphp
                                         @foreach($Parents as $parents)
                                         @if($parents->user_son_id==$data->id)
                                         <td>{{$parents->name}} {{$parents->last_name}}</td>
-                                        @php break; @endphp
+                                        @php $band=1; break; @endphp
                                         @endif
                                         @endforeach
+
+                                        @if($band==0)
+                                            <td>--------</td>
+                                        @endif
                                         <td class="no-sort no-click" id="bread-actions">
                                                 <div class="dropdown ">
                                                     <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -372,6 +377,7 @@
 
         var deleteFormAction;
         $('td').on('click', '.delete', function (e) {
+            // alert()
             $('#delete_form')[0].action = '/admin/children/'+$(this).data('id');            
             $('#delete_modal').modal('show');
         });

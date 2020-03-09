@@ -495,7 +495,7 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
                 $InventoryRefresh->quantity_receive=$InventoryRefresh->quantity_receive-1;
                 $InventoryRefresh->quantity_delivered=$InventoryRefresh->quantity_delivered+1;
                 $InventoryRefresh->save();
-            break;
+                break;
             }
         }
         event(new BreadDataAdded($dataType, $data));
@@ -543,7 +543,18 @@ class VisitsController extends \TCG\Voyager\Http\Controllers\Controller
         $user_id='';
         foreach ($ids as $id) {
             $Visit=Visit::find($id);
-            // dd($id);
+            // dd($Visit);
+            $Inventory=Inventory::where("formula_id",$Visit->formula_id)->get();
+        // dd();
+            foreach($Inventory as $inv){
+                if($inv->quantity_receive>0){
+                    $InventoryRefresh=Inventory::find($inv->id);
+                    $InventoryRefresh->quantity_receive=$InventoryRefresh->quantity_receive+1;
+                    $InventoryRefresh->quantity_delivered=$InventoryRefresh->quantity_delivered-1;
+                    $InventoryRefresh->save();
+                    break;
+                }
+            }
             $user_id=$Visit->child_user_id;
             $data = call_user_func([$dataType->model_name, 'findOrFail'], $id);
 

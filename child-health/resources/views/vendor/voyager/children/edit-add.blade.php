@@ -95,6 +95,14 @@
                                 @endif
                             @endforeach
                             <div class="col-md-12">
+                                <label for="">Talla</label>
+                                <input type="number" step="any" class="form-control" name="length" value="{{isset($dataTypeContent->length)?$dataTypeContent->length:''}}">
+                            </div>
+                            <div class="col-md-12">
+                                <label for="">Peso</label>
+                                <input type="number" step="any" class="form-control" name="weight" value="{{isset($dataTypeContent->weight)?$dataTypeContent->weight:''}}">
+                            </div>
+                            <div class="col-md-12">
                                 <label for="">Seleccione Pais</label>
                                 
                                 <select name="country_id" id="country_id" class="form-control select2" onchange="searchStateCountry()">

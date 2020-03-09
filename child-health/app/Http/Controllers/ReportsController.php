@@ -362,6 +362,8 @@ class ReportsController extends \TCG\Voyager\Http\Controllers\Controller
             "users.user_son_id",
             "users.role_id as user_role_id",
             "users.phone as user_phone",
+            "users.length as user_length",
+            "users.weight as user_weight",
 
             "parents.id as parent_id",
             "parents.name as parent_name",
